@@ -10,19 +10,18 @@ TicketFlow – Billetterie d'événements avec QR Code
 
 ## Description du Projet
 
-Ce projet est une application Java permettant de gérer une billetterie d’événements à l’aide de QR codes.
+Ce projet est une application Java permettant de gérer un système de coupons à l’aide de QR codes.
 
-L’application permet à un organisateur de :
+L’application permet à un administrateur de :
+- créer des campagnes de coupons (réductions, offres spéciales, etc.) 
+- consulter la liste des campagnes et des coupons générés 
+- générer des coupons uniques pour une campagne 
+- associer à chaque coupon un QR code 
+- scanner un coupon lors de son utilisation avec une douchette QR code 
+- vérifier si le coupon est valide, expiré, déjà utilisé ou inexistant 
+- enregistrer l’utilisation du coupon dans une base de données SQLite.
 
-- créer un événement ;
-- consulter la liste des événements ;
-- générer des billets uniques pour un événement ;
-- associer à chaque billet un QR code ;
-- scanner un billet à l’entrée avec une douchette QR code ;
-- vérifier si le billet est valide, déjà utilisé ou inexistant ;
-- enregistrer l’utilisation du billet dans une base de données SQLite.
-
-L’objectif est de proposer une application simple, claire et pratique pour la gestion d’accès à des événements, tout en respectant les contraintes du projet : utilisation d’une librairie de génération de QR codes, lecture via matériel de scan, persistance des données, architecture logicielle propre, vues FXML, multithreading et tests unitaires.
+L’objectif est de proposer une application simple, claire et pratique pour la gestion et la validation de coupons, tout en respectant les contraintes du projet : utilisation d’une librairie de génération de QR codes, lecture via matériel de scan, persistance des données, architecture logicielle propre, vues FXML, multithreading et tests unitaires.
 
 ## Diagramme de Classe
 
