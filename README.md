@@ -38,7 +38,7 @@ L’objectif est de proposer une application simple, claire et pratique pour la 
 
 ## Calendrier hebdomadaire des tâches
 
-# Semaine 1
+
 /
 
 ## Installation et utilisation
