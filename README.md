@@ -1,6 +1,4 @@
-# Nom du Projet
-
-Ticket – Billetterie d'événements avec QR Code
+# LaserArena – Gestion de sessions de lasergame avec QR Code
 
 ## Auteurs
 
@@ -10,24 +8,23 @@ Ticket – Billetterie d'événements avec QR Code
 
 ## Description du Projet
 
-Ce projet consiste en une application Java dédiée à la gestion de coupons de réduction pour supermarchés, utilisant des QR codes pour simplifier leur distribution et leur utilisation.
+Ce projet consiste en une application Java dédiée à la gestion de sessions de lasergame, utilisant des QR codes pour simplifier l'enregistrement des joueurs et le suivi des parties.
 
-L’objectif est de permettre à une enseigne de supermarché de créer et gérer facilement des offres promotionnelles (réductions, produits gratuits, offres limitées, etc.), tout en assurant un contrôle fiable lors de leur utilisation en caisse.
+L'objectif est de permettre à une salle de lasergame de créer et gérer facilement des sessions de jeu (arènes, équipes, durées, scores…), tout en assurant un contrôle fluide lors de l'accès des joueurs à l'arène.
 
-Les coupons sont générés dans le cadre de campagnes promotionnelles (par exemple : “-10% sur les produits laitiers”, “1 acheté = 1 offert”, etc.).
-Chaque coupon est unique et associé à un QR code, que le client peut présenter en magasin (sur smartphone ou imprimé).
+Les sessions sont créées par un opérateur (par exemple : "Session de lasergame – 30 min – 2 équipes – 10 joueurs"). Chaque joueur reçoit un billet unique associé à un QR code, qu'il peut présenter à l'entrée de l'arène (sur smartphone ou imprimé).
 
-Lors du passage en caisse, le QR code est scanné à l’aide d’une douchette. L’application vérifie alors instantanément l’état du coupon.
+Lors de l'accès à la salle, le QR code est scanné à l'aide d'une douchette. L'application vérifie alors instantanément la validité du billet du joueur.
 
-L’application permet à un administrateur de :
-- créer des campagnes de coupons (réductions, offres spéciales, etc.)
-- consulter la liste des campagnes et des coupons générés.
-- générer des coupons uniques pour une campagne.
-- associer à chaque coupon un QR code.
-- scanner un coupon lors de son utilisation avec une douchette QR code.
-- vérifier si le coupon est valide, expiré, déjà utilisé ou inexistant.
-- enregistrer l’utilisation du coupon dans une base de données SQLite.
-
+L'application permet à un opérateur de :
+- créer des sessions de jeu (type de partie, durée, nombre de joueurs, équipes, etc.)
+- consulter la liste des sessions et des billets générés.
+- générer des billets uniques pour les joueurs d'une session.
+- associer à chaque billet un QR code.
+- scanner le billet d'un joueur lors de son entrée dans l'arène avec une douchette QR code.
+- vérifier si le billet est valide, expiré, déjà utilisé ou inexistant.
+- consulter et afficher les scores des joueurs à l'issue d'une session.
+- enregistrer toutes les informations dans une base de données SQLite.
 
 ## Diagramme de Classe
 
@@ -43,13 +40,11 @@ L’application permet à un administrateur de :
 
 ## Calendrier hebdomadaire des tâches
 
-
 /
 
 ## Installation et utilisation
 
 /
-
 
 ## Problèmes connus de l'application
 
