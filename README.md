@@ -1,6 +1,6 @@
 # Nom du Projet
 
-TicketFlow – Billetterie d'événements avec QR Code
+Ticket – Billetterie d'événements avec QR Code
 
 ## Auteurs
 
@@ -21,7 +21,6 @@ L’application permet à un administrateur de :
 - vérifier si le coupon est valide, expiré, déjà utilisé ou inexistant 
 - enregistrer l’utilisation du coupon dans une base de données SQLite.
 
-L’objectif est de proposer une application simple, claire et pratique pour la gestion et la validation de coupons, tout en respectant les contraintes du projet : utilisation d’une librairie de génération de QR codes, lecture via matériel de scan, persistance des données, architecture logicielle propre, vues FXML, multithreading et tests unitaires.
 
 ## Diagramme de Classe
 
