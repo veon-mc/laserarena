@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.lasararena.controller.ScannerController">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 14 20; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0; -fx-background-color: white;">
+            <Label text="LaserArena" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Sessions" styleClass="nav-btn"        onAction="#onNavSessions"/>
+            <Button text="Billets"  styleClass="nav-btn"        onAction="#onNavBillets"/>
+            <Button text="Scanner"  styleClass="nav-btn-active" onAction="#onNavScanner"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox alignment="CENTER" spacing="24" style="-fx-padding: 40 28;">
+
+            <VBox spacing="10" maxWidth="420" style="-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-background-color: white; -fx-padding: 20;">
+                <Label text="Scannez ou saisissez un code billet"
+                       style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #888;"/>
+                <HBox spacing="8">
+                    <TextField fx:id="codeField"
+                               promptText="Code billet (UUID)"
+                               HBox.hgrow="ALWAYS"
+                               onAction="#onValider"/>
+                    <Button text="Valider" styleClass="btn-primary" onAction="#onValider"/>
+                </HBox>
+                <Label text="La douchette envoie le code automatiquement dans le champ"
+                       style="-fx-font-size: 12px; -fx-text-fill: #aaa; -fx-alignment: CENTER;"
+                       maxWidth="Infinity"/>
+            </VBox>
+
+            <VBox fx:id="resultOkBox" maxWidth="420" spacing="4"
+                  style="-fx-background-color: #E1F5EE; -fx-border-color: #5DCAA5; -fx-border-width: 1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 18 20;"
+                  visible="false" managed="false">
+                <Label text="Billet valide" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #085041;"/>
+                <Label fx:id="resultOkDetail" text="" style="-fx-font-size: 13px; -fx-text-fill: #0F6E56;"/>
+            </VBox>
+
+            <VBox fx:id="resultErrBox" maxWidth="420" spacing="4"
+                  style="-fx-background-color: #FCEBEB; -fx-border-color: #F09595; -fx-border-width: 1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 18 20;"
+                  visible="false" managed="false">
+                <Label fx:id="resultErrTitle" text="" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #791F1F;"/>
+                <Label fx:id="resultErrDetail" text="" style="-fx-font-size: 13px; -fx-text-fill: #A32D2D;"/>
+            </VBox>
+
+        </VBox>
+    </center>
+
+</BorderPane>

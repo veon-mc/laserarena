@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.lasararena.controller.SessionListController">
+
+    <top>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 14 20; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0; -fx-background-color: white;">
+                <Label text="LaserArena" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Sessions" styleClass="nav-btn-active" onAction="#onNavSessions"/>
+                <Button text="Billets"  styleClass="nav-btn"        onAction="#onNavBillets"/>
+                <Button text="Scanner"  styleClass="nav-btn"        onAction="#onNavScanner"/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 10 20; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+                <Label fx:id="sessionCountLabel" text="0 sessions" style="-fx-text-fill: #888; -fx-font-size: 13px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="+ Nouvelle session" styleClass="btn-primary" onAction="#onNouvelleSession"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <TableView fx:id="sessionTable" style="-fx-border-width: 0;">
+            <columns>
+                <TableColumn fx:id="colNom"         text="Nom"           prefWidth="200"/>
+                <TableColumn fx:id="colType"        text="Type"          prefWidth="160"/>
+                <TableColumn fx:id="colDuree"       text="Durée"         prefWidth="100"/>
+                <TableColumn fx:id="colMaxJoueurs"  text="Joueurs max"   prefWidth="110"/>
+                <TableColumn fx:id="colStatut"      text="Statut"        prefWidth="110"/>
+                <TableColumn fx:id="colActions"     text=""              prefWidth="120"/>
+            </columns>
+        </TableView>
+    </center>
+
+</BorderPane>
