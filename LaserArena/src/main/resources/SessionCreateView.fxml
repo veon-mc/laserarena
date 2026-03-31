@@ -4,9 +4,10 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
+<?import javafx.collections.FXCollections?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.lasararena.controller.SessionCreateController">
+            fx:controller="Controller.SessionCreateController">
 
     <top>
         <VBox>

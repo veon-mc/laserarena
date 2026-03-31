@@ -6,7 +6,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.lasararena.controller.SessionListController">
+            fx:controller="Controller.SessionListController">
 
     <top>
         <VBox>
