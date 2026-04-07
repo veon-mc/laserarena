@@ -2,12 +2,10 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
-<?import javafx.geometry.Pos?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.lasararena.controller.ScannerController">
+            fx:controller="Controller.ScannerController">
 
     <top>
         <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 14 20; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0; -fx-background-color: white;">
@@ -50,8 +48,6 @@
                 <Label fx:id="resultErrTitle" text="" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #791F1F;"/>
                 <Label fx:id="resultErrDetail" text="" style="-fx-font-size: 13px; -fx-text-fill: #A32D2D;"/>
             </VBox>
-
         </VBox>
     </center>
-
 </BorderPane>

@@ -1,6 +1,5 @@
 package Controller;
 
-
 import Model.Billet;
 import Model.Session;
 import Model.StatutBillet;
