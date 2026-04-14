@@ -38,21 +38,24 @@ public class ScannerController {
     @FXML
     public void onValider() {
         String code = codeField.getText().trim();
+        code = code.replace("&", "-");
         if (code.isEmpty()) return;
 
         cacherResultats();
 
         // Accès BDD en arrière-plan — multithreading requis par le cahier des charges
+        String finalCode = code;
         Task<Optional<Billet>> task = new Task<>() {
             @Override
             protected Optional<Billet> call() {
-                return billetRepository.findByCode(code);
+                return billetRepository.findByCode(finalCode);
             }
         };
 
+        String finalCode1 = code;
         task.setOnSucceeded(e -> {
             Optional<Billet> result = task.getValue();
-            Platform.runLater(() -> afficherResultat(code, result));
+            Platform.runLater(() -> afficherResultat(finalCode1, result));
         });
 
         task.setOnFailed(e -> Platform.runLater(() -> {

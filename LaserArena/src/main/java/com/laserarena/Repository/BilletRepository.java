@@ -122,4 +122,14 @@ public class BilletRepository {
         }
         return billets;
     }
+
+    public void delete(int id) {
+        try (Connection conn = DatabaseConnection.getInstance();
+             PreparedStatement stmt = conn.prepareStatement("DELETE FROM billet WHERE id=?")) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la suppression du billet", e);
+        }
+    }
 }
