@@ -48,8 +48,6 @@
                 <Label fx:id="resultErrTitle" text="" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #791F1F;"/>
                 <Label fx:id="resultErrDetail" text="" style="-fx-font-size: 13px; -fx-text-fill: #A32D2D;"/>
             </VBox>
-
         </VBox>
     </center>
-
 </BorderPane>

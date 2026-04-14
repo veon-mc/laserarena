@@ -1,6 +1,5 @@
 package Controller;
 
-
 import Model.Billet;
 import Model.Session;
 import Model.StatutBillet;
@@ -15,7 +14,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.util.UUID;
