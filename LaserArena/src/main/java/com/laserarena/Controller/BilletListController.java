@@ -20,7 +20,7 @@ public class BilletListController {
 
     @FXML private TableView<Billet>              billetTable;
     @FXML private TableColumn<Billet, String>    colCode;
-    @FXML private TableColumn<Billet, String>    colStatut;
+    @FXML private TableColumn<Billet, StatutBillet> colStatut;
     @FXML private TableColumn<Billet, LocalDate> colExpiration;
     @FXML private TableColumn<Billet, Void>      colQr;
     @FXML private Label                          sessionNomLabel;
@@ -51,14 +51,14 @@ public class BilletListController {
         colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
         colStatut.setCellFactory(col -> new TableCell<>() {
             @Override
-            protected void updateItem(String statut, boolean empty) {
+            protected void updateItem(StatutBillet statut, boolean empty) {
                 super.updateItem(statut, empty);
                 if (empty || statut == null) { setGraphic(null); return; }
-                Label badge = new Label(statut);
+                Label badge = new Label(statut.name());
                 String style = switch (statut) {
-                    case "VALIDE"  -> "-fx-background-color:#E1F5EE;-fx-text-fill:#085041;";
-                    case "UTILISE" -> "-fx-background-color:#E6F1FB;-fx-text-fill:#185FA5;";
-                    default        -> "-fx-background-color:#FCEBEB;-fx-text-fill:#A32D2D;";
+                    case VALIDE   -> "-fx-background-color:#E1F5EE;-fx-text-fill:#085041;";
+                    case UTILISE  -> "-fx-background-color:#E6F1FB;-fx-text-fill:#185FA5;";
+                    default       -> "-fx-background-color:#FCEBEB;-fx-text-fill:#A32D2D;";
                 };
                 badge.setStyle(style + "-fx-padding:2 8;-fx-background-radius:20;");
                 setGraphic(badge);
@@ -112,7 +112,9 @@ public class BilletListController {
 
         task.setOnSucceeded(e -> Platform.runLater(this::chargerBillets));
         task.setOnFailed(e -> Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur lors de la génération du billet.");
+            Throwable ex = task.getException();
+            ex.printStackTrace(); // affiche dans la console
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur : " + ex.getMessage());
             alert.showAndWait();
         }));
 

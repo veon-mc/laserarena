@@ -43,6 +43,7 @@ public class SessionCreateController {
         LocalDate expiration  = dateExpirationPicker.getValue();
 
         Session session = new Session(nom, type, duree, maxJoueurs, StatutSession.OUVERTE);
+        session.setDateExpiration(expiration);
 
         Task<Void> task = new Task<>() {
             @Override
