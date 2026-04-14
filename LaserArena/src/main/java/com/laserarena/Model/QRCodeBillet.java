@@ -1,4 +1,4 @@
-package Model;
+package com.laserarena.Model;
 
 public class QRCodeBillet {
 }
