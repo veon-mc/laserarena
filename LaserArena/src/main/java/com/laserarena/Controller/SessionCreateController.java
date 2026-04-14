@@ -112,6 +112,6 @@ public class SessionCreateController {
     }
 
     @FXML public void onNavSessions() { NavigationHelper.navigateTo("SessionListView.fxml"); }
-    @FXML public void onNavBillets()  { NavigationHelper.navigateTo("BilletListView.fxml"); }
+    @FXML public void onNavBillets()  { NavigationHelper.navigateToBillets(); }
     @FXML public void onNavScanner()  { NavigationHelper.navigateTo("ScannerView.fxml"); }
 }

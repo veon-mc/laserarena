@@ -19,9 +19,24 @@ public class NavigationHelper {
     public static void navigateTo(String fxmlFile) {
         try {
             FXMLLoader loader = new FXMLLoader(
-                    NavigationHelper.class.getResource("/View/" + fxmlFile)
+                    NavigationHelper.class.getResource("/" + fxmlFile)
             );
             Parent root = loader.load();
+            primaryStage.getScene().setRoot(root);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Navigation vers BilletListView sans session (tous les billets)
+    public static void navigateToBillets() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    NavigationHelper.class.getResource("/BilletListView.fxml")
+            );
+            Parent root = loader.load();
+            BilletListController controller = loader.getController();
+            controller.init();
             primaryStage.getScene().setRoot(root);
         } catch (IOException e) {
             e.printStackTrace();
@@ -32,7 +47,7 @@ public class NavigationHelper {
     public static void navigateToWithSession(String fxmlFile, Session session) {
         try {
             FXMLLoader loader = new FXMLLoader(
-                    NavigationHelper.class.getResource("/View/" + fxmlFile)
+                    NavigationHelper.class.getResource("/" + fxmlFile)
             );
             Parent root = loader.load();
             BilletListController controller = loader.getController();

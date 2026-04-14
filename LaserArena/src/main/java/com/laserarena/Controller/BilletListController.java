@@ -26,14 +26,20 @@ public class BilletListController {
     @FXML private Label                          sessionNomLabel;
     @FXML private Label                          billetCountLabel;
 
-    private Session           session;
-    private final BilletRepository      billetRepository      = new BilletRepository();
-    private final QRCodeBilletRepository qrCodeRepository     = new QRCodeBilletRepository();
+    private Session session;
+    private final BilletRepository       billetRepository = new BilletRepository();
+    private final QRCodeBilletRepository qrCodeRepository = new QRCodeBilletRepository();
 
     // Appelé par NavigationHelper pour injecter la session courante
     public void setSession(Session session) {
         this.session = session;
         sessionNomLabel.setText(session.getNom());
+        chargerBillets();
+    }
+
+    // Appelé depuis onNavBillets (sans session — affiche tous les billets)
+    public void init() {
+        sessionNomLabel.setText("Tous les billets");
         chargerBillets();
     }
 
@@ -82,6 +88,12 @@ public class BilletListController {
     // ------------------------------------------------------------------ //
     @FXML
     public void onGenererBillet() {
+        if (session == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Sélectionnez une session pour générer un billet.");
+            alert.showAndWait();
+            return;
+        }
+
         Billet billet = new Billet(
                 UUID.randomUUID().toString(),
                 StatutBillet.VALIDE,
@@ -89,7 +101,6 @@ public class BilletListController {
                 session
         );
 
-        // Sauvegarde BDD + génération QR en arrière-plan
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() throws Exception {
@@ -100,7 +111,6 @@ public class BilletListController {
         };
 
         task.setOnSucceeded(e -> Platform.runLater(this::chargerBillets));
-
         task.setOnFailed(e -> Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur lors de la génération du billet.");
             alert.showAndWait();
@@ -145,9 +155,10 @@ public class BilletListController {
         Task<ObservableList<Billet>> task = new Task<>() {
             @Override
             protected ObservableList<Billet> call() {
-                return FXCollections.observableArrayList(
-                        billetRepository.findBySession(session)
-                );
+                if (session != null)
+                    return FXCollections.observableArrayList(billetRepository.findBySession(session));
+                else
+                    return FXCollections.observableArrayList(billetRepository.findAll());
             }
         };
 
@@ -160,6 +171,6 @@ public class BilletListController {
     }
 
     @FXML public void onNavSessions() { NavigationHelper.navigateTo("SessionListView.fxml"); }
-    @FXML public void onNavBillets()  { /* déjà sur cette vue */ }
+    @FXML public void onNavBillets()  { NavigationHelper.navigateToBillets(); }
     @FXML public void onNavScanner()  { NavigationHelper.navigateTo("ScannerView.fxml"); }
 }

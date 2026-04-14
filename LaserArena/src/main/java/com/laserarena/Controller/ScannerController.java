@@ -110,7 +110,7 @@ public class ScannerController {
     //  Navigation                                                          //
     // ------------------------------------------------------------------ //
     @FXML public void onNavSessions() { NavigationHelper.navigateTo("SessionListView.fxml"); }
-    @FXML public void onNavBillets()  { NavigationHelper.navigateTo("BilletListView.fxml");  }
+    @FXML public void onNavBillets()  { NavigationHelper.navigateToBillets(); }
     @FXML public void onNavScanner()  { /* déjà sur cette vue */ }
 
     // ------------------------------------------------------------------ //

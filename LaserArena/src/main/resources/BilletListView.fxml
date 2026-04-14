@@ -5,7 +5,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="Controller.BilletListController">
+            fx:controller="com.laserarena.Controller.BilletListController">
 
     <top>
         <VBox>
@@ -21,7 +21,7 @@
                 <Label fx:id="sessionNomLabel" text="" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
                 <Label fx:id="billetCountLabel" text="0 billets" style="-fx-text-fill: #888; -fx-font-size: 13px; -fx-padding: 0 0 0 12;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="+ GÃŠnÃŠrer un billet" styleClass="btn-primary" onAction="#onGenererBillet"/>
+                <Button text="+ Générer un billet" styleClass="btn-primary" onAction="#onGenererBillet"/>
             </HBox>
         </VBox>
     </top>

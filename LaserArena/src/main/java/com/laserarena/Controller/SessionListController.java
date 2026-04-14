@@ -18,7 +18,7 @@ public class SessionListController {
     @FXML private TableColumn<Session, String>  colType;
     @FXML private TableColumn<Session, Integer> colDuree;
     @FXML private TableColumn<Session, Integer> colMaxJoueurs;
-    @FXML private TableColumn<Session, String>  colStatut;
+    @FXML private TableColumn<Session, StatutSession>  colStatut;
     @FXML private TableColumn<Session, Void>    colActions;
     @FXML private Label                         sessionCountLabel;
 
@@ -34,11 +34,11 @@ public class SessionListController {
         colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
         colStatut.setCellFactory(col -> new TableCell<>() {
             @Override
-            protected void updateItem(String statut, boolean empty) {
+            protected void updateItem(StatutSession statut, boolean empty) {
                 super.updateItem(statut, empty);
                 if (empty || statut == null) { setGraphic(null); return; }
-                Label badge = new Label(statut);
-                if (statut.equals(StatutSession.OUVERTE.name())) {
+                Label badge = new Label(statut.name());
+                if (statut == StatutSession.OUVERTE) {
                     badge.setStyle("-fx-background-color:#E1F5EE; -fx-text-fill:#085041; -fx-padding:2 8; -fx-background-radius:20;");
                 } else {
                     badge.setStyle("-fx-background-color:#F1EFE8; -fx-text-fill:#5F5E5A; -fx-padding:2 8; -fx-background-radius:20;");
@@ -89,6 +89,6 @@ public class SessionListController {
 
     @FXML public void onNouvelleSession() { NavigationHelper.navigateTo("SessionCreateView.fxml"); }
     @FXML public void onNavSessions()     { /* dÃŠjÃ  sur cette vue */ }
-    @FXML public void onNavBillets()      { NavigationHelper.navigateTo("BilletListView.fxml"); }
+    @FXML public void onNavBillets()  { NavigationHelper.navigateToBillets(); }
     @FXML public void onNavScanner()      { NavigationHelper.navigateTo("ScannerView.fxml"); }
 }

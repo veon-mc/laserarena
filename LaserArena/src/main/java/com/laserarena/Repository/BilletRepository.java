@@ -103,4 +103,23 @@ public class BilletRepository {
         b.setSession(s);
         return b;
     }
+
+    public List<Billet> findAll() {
+        List<Billet> billets = new ArrayList<>();
+        String sql = """
+        SELECT b.*, s.id as s_id, s.nom, s.type_partie, s.duree_minutes,
+               s.max_joueurs, s.statut as s_statut, s.date_expiration as s_date
+        FROM billet b
+        JOIN session s ON b.session_id = s.id
+        ORDER BY b.id DESC
+    """;
+        try (Connection conn = DatabaseConnection.getInstance();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) billets.add(mapperAvecSession(rs));
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors du chargement des billets", e);
+        }
+        return billets;
+    }
 }
