@@ -1,10 +1,7 @@
-package Controller;
+package com.laserarena.Controller;
 
-import Model.Billet;
-import Model.Session;
-import Model.StatutBillet;
-import Repository.BilletRepository;
-import Repository.QRCodeBilletRepository;
+
+import com.laserarena.Model.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,6 +11,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.util.UUID;

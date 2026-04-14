@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="19529fe9-e899-4a42-a501-357699a6d1ca" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/64889-66076-lepomme-khadem.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/jarRepositories.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/laserarena/Controller/FXMLController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/laserarena/Model/StatutBillet.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/laserarena/Model/StatutSession.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Model/Billet.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Model/Session.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Model/StatutBillet.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Model/StatutSession.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Model/TypePartie.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/laserarena/Model/Billet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/laserarena/Model/Billet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/laserarena/Model/QRCodeBillet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/laserarena/Model/QRCodeBillet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/laserarena/Model/Session.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/laserarena/Model/Session.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/laserarena/Model/TypePartie.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/laserarena/Model/TypePartie.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="3Bi9FEljR3ISN0GKqlWKSpoLMNL" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "feature/model",
+    "last_opened_file_path": "Z:/PRO1/64889-66076-lepomme-khadem/LaserArena"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="19529fe9-e899-4a42-a501-357699a6d1ca" name="Changes" comment="" />
+      <created>1774960917832</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1774960917832</updated>
+    </task>
+    <servers />
+  </component>
+</project>
