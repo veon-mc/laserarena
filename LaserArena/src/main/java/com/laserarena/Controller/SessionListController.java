@@ -10,17 +10,18 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.application.Platform;
+import javafx.scene.layout.HBox;
 
 public class SessionListController {
 
-    @FXML private TableView<Session>            sessionTable;
-    @FXML private TableColumn<Session, String>  colNom;
-    @FXML private TableColumn<Session, String>  colType;
-    @FXML private TableColumn<Session, Integer> colDuree;
-    @FXML private TableColumn<Session, Integer> colMaxJoueurs;
-    @FXML private TableColumn<Session, StatutSession>  colStatut;
-    @FXML private TableColumn<Session, Void>    colActions;
-    @FXML private Label                         sessionCountLabel;
+    @FXML private TableView<Session>                  sessionTable;
+    @FXML private TableColumn<Session, String>        colNom;
+    @FXML private TableColumn<Session, String>        colType;
+    @FXML private TableColumn<Session, Integer>       colDuree;
+    @FXML private TableColumn<Session, Integer>       colMaxJoueurs;
+    @FXML private TableColumn<Session, StatutSession> colStatut;
+    @FXML private TableColumn<Session, Void>          colActions;
+    @FXML private Label                               sessionCountLabel;
 
     private final SessionRepository sessionRepository = new SessionRepository();
 
@@ -49,22 +50,54 @@ public class SessionListController {
         });
 
         colActions.setCellFactory(col -> new TableCell<>() {
-            private final Button btn = new Button("Voir billets");
+            private final Button btnBillets = new Button("Voir billets");
+            private final Button btnSuppr   = new Button("Supprimer");
+            private final HBox   box        = new HBox(6, btnBillets, btnSuppr);
             {
-                btn.setStyle("-fx-font-size:12px; -fx-padding:4 10; -fx-border-color:#e0e0e0; -fx-border-width:0.5; -fx-background-color:transparent; -fx-cursor:hand;");
-                btn.setOnAction(e -> {
+                btnBillets.setStyle("-fx-font-size:12px; -fx-padding:4 10; -fx-border-color:#e0e0e0; -fx-border-width:0.5; -fx-background-color:transparent; -fx-cursor:hand;");
+                btnSuppr  .setStyle("-fx-font-size:12px; -fx-padding:4 10; -fx-border-color:#f09595; -fx-border-width:0.5; -fx-background-color:transparent; -fx-text-fill:#a32d2d; -fx-cursor:hand;");
+
+                btnBillets.setOnAction(e -> {
                     Session s = getTableView().getItems().get(getIndex());
                     NavigationHelper.navigateToWithSession("BilletListView.fxml", s);
+                });
+
+                btnSuppr.setOnAction(e -> {
+                    Session s = getTableView().getItems().get(getIndex());
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                            "Supprimer la session \"" + s.getNom() + "\" et tous ses billets ?",
+                            ButtonType.YES, ButtonType.NO);
+                    confirm.setTitle("Confirmation");
+                    confirm.setHeaderText(null);
+                    confirm.showAndWait().ifPresent(bt -> {
+                        if (bt == ButtonType.YES) supprimerSession(s);
+                    });
                 });
             }
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : btn);
+                setGraphic(empty ? null : box);
             }
         });
 
         chargerSessions();
+    }
+
+    private void supprimerSession(Session session) {
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                sessionRepository.delete(session.getId());
+                return null;
+            }
+        };
+        task.setOnSucceeded(e -> Platform.runLater(this::chargerSessions));
+        task.setOnFailed(e -> Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur lors de la suppression.");
+            alert.showAndWait();
+        }));
+        new Thread(task).start();
     }
 
     private void chargerSessions() {
@@ -88,7 +121,7 @@ public class SessionListController {
     }
 
     @FXML public void onNouvelleSession() { NavigationHelper.navigateTo("SessionCreateView.fxml"); }
-    @FXML public void onNavSessions()     { /* dÃŠjÃ  sur cette vue */ }
-    @FXML public void onNavBillets()  { NavigationHelper.navigateToBillets(); }
+    @FXML public void onNavSessions()     { /* déjà sur cette vue */ }
+    @FXML public void onNavBillets()      { NavigationHelper.navigateToBillets(); }
     @FXML public void onNavScanner()      { NavigationHelper.navigateTo("ScannerView.fxml"); }
 }

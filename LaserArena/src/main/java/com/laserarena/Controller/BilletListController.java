@@ -1,6 +1,5 @@
 package com.laserarena.Controller;
 
-
 import com.laserarena.Model.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -11,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import com.laserarena.Repository.*;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
@@ -18,26 +18,24 @@ import java.util.UUID;
 
 public class BilletListController {
 
-    @FXML private TableView<Billet>              billetTable;
-    @FXML private TableColumn<Billet, String>    colCode;
+    @FXML private TableView<Billet>                 billetTable;
+    @FXML private TableColumn<Billet, String>       colCode;
     @FXML private TableColumn<Billet, StatutBillet> colStatut;
-    @FXML private TableColumn<Billet, LocalDate> colExpiration;
-    @FXML private TableColumn<Billet, Void>      colQr;
-    @FXML private Label                          sessionNomLabel;
-    @FXML private Label                          billetCountLabel;
+    @FXML private TableColumn<Billet, LocalDate>    colExpiration;
+    @FXML private TableColumn<Billet, Void>         colQr;
+    @FXML private Label                             sessionNomLabel;
+    @FXML private Label                             billetCountLabel;
 
     private Session session;
     private final BilletRepository       billetRepository = new BilletRepository();
     private final QRCodeBilletRepository qrCodeRepository = new QRCodeBilletRepository();
 
-    // Appelé par NavigationHelper pour injecter la session courante
     public void setSession(Session session) {
         this.session = session;
         sessionNomLabel.setText(session.getNom());
         chargerBillets();
     }
 
-    // Appelé depuis onNavBillets (sans session — affiche tous les billets)
     public void init() {
         sessionNomLabel.setText("Tous les billets");
         chargerBillets();
@@ -56,9 +54,9 @@ public class BilletListController {
                 if (empty || statut == null) { setGraphic(null); return; }
                 Label badge = new Label(statut.name());
                 String style = switch (statut) {
-                    case VALIDE   -> "-fx-background-color:#E1F5EE;-fx-text-fill:#085041;";
-                    case UTILISE  -> "-fx-background-color:#E6F1FB;-fx-text-fill:#185FA5;";
-                    default       -> "-fx-background-color:#FCEBEB;-fx-text-fill:#A32D2D;";
+                    case VALIDE  -> "-fx-background-color:#E1F5EE;-fx-text-fill:#085041;";
+                    case UTILISE -> "-fx-background-color:#E6F1FB;-fx-text-fill:#185FA5;";
+                    default      -> "-fx-background-color:#FCEBEB;-fx-text-fill:#A32D2D;";
                 };
                 badge.setStyle(style + "-fx-padding:2 8;-fx-background-radius:20;");
                 setGraphic(badge);
@@ -67,25 +65,38 @@ public class BilletListController {
         });
 
         colQr.setCellFactory(col -> new TableCell<>() {
-            private final Button btn = new Button("Afficher QR");
+            private final Button btnQr    = new Button("Afficher QR");
+            private final Button btnSuppr = new Button("Supprimer");
+            private final HBox   box      = new HBox(6, btnQr, btnSuppr);
             {
-                btn.setStyle("-fx-font-size:12px;-fx-padding:4 10;-fx-border-color:#e0e0e0;-fx-border-width:0.5;-fx-background-color:transparent;-fx-cursor:hand;");
-                btn.setOnAction(e -> {
+                btnQr   .setStyle("-fx-font-size:12px;-fx-padding:4 10;-fx-border-color:#e0e0e0;-fx-border-width:0.5;-fx-background-color:transparent;-fx-cursor:hand;");
+                btnSuppr.setStyle("-fx-font-size:12px;-fx-padding:4 10;-fx-border-color:#f09595;-fx-border-width:0.5;-fx-background-color:transparent;-fx-text-fill:#a32d2d;-fx-cursor:hand;");
+
+                btnQr.setOnAction(e -> {
                     Billet b = getTableView().getItems().get(getIndex());
                     afficherQRCode(b);
+                });
+
+                btnSuppr.setOnAction(e -> {
+                    Billet b = getTableView().getItems().get(getIndex());
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                            "Supprimer le billet \"" + b.getCode() + "\" ?",
+                            ButtonType.YES, ButtonType.NO);
+                    confirm.setTitle("Confirmation");
+                    confirm.setHeaderText(null);
+                    confirm.showAndWait().ifPresent(bt -> {
+                        if (bt == ButtonType.YES) supprimerBillet(b);
+                    });
                 });
             }
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : btn);
+                setGraphic(empty ? null : box);
             }
         });
     }
 
-    // ------------------------------------------------------------------ //
-    //  Générer un nouveau billet pour la session                          //
-    // ------------------------------------------------------------------ //
     @FXML
     public void onGenererBillet() {
         if (session == null) {
@@ -113,7 +124,7 @@ public class BilletListController {
         task.setOnSucceeded(e -> Platform.runLater(this::chargerBillets));
         task.setOnFailed(e -> Platform.runLater(() -> {
             Throwable ex = task.getException();
-            ex.printStackTrace(); // affiche dans la console
+            ex.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur : " + ex.getMessage());
             alert.showAndWait();
         }));
@@ -121,9 +132,22 @@ public class BilletListController {
         new Thread(task).start();
     }
 
-    // ------------------------------------------------------------------ //
-    //  Afficher la popup avec le QR code du billet                       //
-    // ------------------------------------------------------------------ //
+    private void supprimerBillet(Billet billet) {
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                billetRepository.delete(billet.getId());
+                return null;
+            }
+        };
+        task.setOnSucceeded(e -> Platform.runLater(this::chargerBillets));
+        task.setOnFailed(e -> Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur lors de la suppression.");
+            alert.showAndWait();
+        }));
+        new Thread(task).start();
+    }
+
     private void afficherQRCode(Billet billet) {
         Task<byte[]> task = new Task<>() {
             @Override
@@ -150,9 +174,6 @@ public class BilletListController {
         new Thread(task).start();
     }
 
-    // ------------------------------------------------------------------ //
-    //  Chargement des billets en arrière-plan                             //
-    // ------------------------------------------------------------------ //
     private void chargerBillets() {
         Task<ObservableList<Billet>> task = new Task<>() {
             @Override
