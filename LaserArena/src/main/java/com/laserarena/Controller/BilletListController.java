@@ -1,11 +1,7 @@
-package Controller;
+package com.laserarena.Controller;
 
 
-import Model.Billet;
-import Model.Session;
-import Model.StatutBillet;
-import Repository.BilletRepository;
-import Repository.QRCodeBilletRepository;
+import com.laserarena.Model.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
