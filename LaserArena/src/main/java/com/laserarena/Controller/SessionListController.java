@@ -1,8 +1,8 @@
 package com.laserarena.Controller;
 
-import Model.Session;
-import Model.StatutSession;
-import Repository.SessionRepository;
+import com.laserarena.Model.Session;
+import com.laserarena.Model.StatutSession;
+import com.laserarena.Repository.SessionRepository;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;

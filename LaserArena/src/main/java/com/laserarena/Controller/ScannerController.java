@@ -1,9 +1,9 @@
 package com.laserarena.Controller;
 
 
-import Model.Billet;
-import Model.StatutBillet;
-import Repository.BilletRepository;
+import com.laserarena.Model.Billet;
+import com.laserarena.Model.StatutBillet;
+import com.laserarena.Repository.BilletRepository;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;

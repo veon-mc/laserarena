@@ -1,4 +1,4 @@
-package Repository;
+package com.laserarena.Repository;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

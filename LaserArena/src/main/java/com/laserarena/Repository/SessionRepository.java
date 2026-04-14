@@ -1,8 +1,8 @@
-package Repository;
+package com.laserarena.Repository;
 
-import Model.Session;
-import Model.StatutSession;
-import Model.TypePartie;
+import com.laserarena.Model.Session;
+import com.laserarena.Model.StatutSession;
+import com.laserarena.Model.TypePartie;
 
 import java.sql.*;
 import java.time.LocalDate;

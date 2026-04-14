@@ -1,7 +1,8 @@
-package Repository;
+package com.laserarena.Repository;
 
-import Model.Billet;
-import Model.StatutBillet;
+import com.laserarena.Model.Billet;
+import com.laserarena.Model.StatutBillet;
+import com.laserarena.Model.Session;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -66,7 +67,7 @@ public class BilletRepository {
         return Optional.empty();
     }
 
-    public List<Billet> findBySession(com.lasararena.model.Session session) {
+    public List<Billet> findBySession(Session session) {
         List<Billet> billets = new ArrayList<>();
         String sql = "SELECT * FROM billet WHERE session_id=? ORDER BY id DESC";
         try (Connection conn = DatabaseConnection.getInstance();
@@ -96,7 +97,7 @@ public class BilletRepository {
 
     private Billet mapperAvecSession(ResultSet rs) throws SQLException {
         Billet b = mapper(rs);
-        com.lasararena.model.Session s = new com.lasararena.model.Session();
+        Session s = new Session();
         s.setId (rs.getInt   ("s_id"));
         s.setNom(rs.getString("nom"));
         b.setSession(s);
