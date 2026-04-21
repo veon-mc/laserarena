@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
@@ -13,6 +14,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import com.laserarena.Repository.*;
+import javafx.stage.Stage;
+
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.util.List;
@@ -227,17 +230,25 @@ public class BilletListController {
             if (imageBytes == null) return;
             Image image = new Image(new ByteArrayInputStream(imageBytes));
             ImageView imageView = new ImageView(image);
-            imageView.setFitWidth(250);
-            imageView.setFitHeight(250);
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("QR Code — " + billet.getCode());
-            alert.setHeaderText(null);
-            alert.getDialogPane().setContent(imageView);
-            alert.showAndWait();
+            imageView.setFitWidth(280);
+            imageView.setFitHeight(280);
+
+            Label codeLabel = new Label(billet.getCode());
+            codeLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #888; -fx-padding: 6 0 0 0;");
+            codeLabel.setWrapText(true);
+
+            VBox root = new VBox(8, imageView, codeLabel);
+            root.setStyle("-fx-padding: 16; -fx-alignment: center; -fx-background-color: white;");
+
+            Stage stage = new Stage();
+            stage.setTitle("QR Code — " + billet.getCode().substring(0, 8) + "...");
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            // Pas de initModality → fenêtre non-modale, l'appli reste cliquable
+            stage.show();
         }));
         new Thread(task).start();
     }
-
     private void chargerBillets() {
         Task<ObservableList<Billet>> task = new Task<>() {
             @Override protected ObservableList<Billet> call() {
