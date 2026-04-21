@@ -38,7 +38,7 @@ public class ScannerController {
     @FXML
     public void onValider() {
         String code = codeField.getText().trim();
-        code = code.replace("&", "-");
+        code = code.replace("§", "-");
         if (code.isEmpty()) return;
 
         cacherResultats();
