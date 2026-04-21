@@ -122,7 +122,12 @@ Pour utiliser l'application, suivez les étapes suivantes :
 git clone https://git.esi-bru.be/2025-2026/4prj1d/c131/projects/64889-66076-lepomme-khadem
 ```
 
-2. Démarrez le projet en exécutant la commande :
+2. Déplacez vous dans le dossier LaserArena :
+```
+cd LaserArena/
+```
+
+3. Démarrez le projet en exécutant la commande :
 ```
 mvn javafx:run
 ```
