@@ -24,15 +24,22 @@ public class DatabaseConnection {
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS session (
-                    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nom             TEXT    NOT NULL,
-                    type_partie     TEXT    NOT NULL,
-                    duree_minutes   INTEGER NOT NULL,
-                    max_joueurs     INTEGER NOT NULL,
-                    statut          TEXT    NOT NULL,
-                    date_expiration TEXT
+                    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nom               TEXT    NOT NULL,
+                    type_partie       TEXT    NOT NULL,
+                    duree_minutes     INTEGER NOT NULL,
+                    max_joueurs       INTEGER NOT NULL,
+                    statut            TEXT    NOT NULL,
+                    date_expiration   TEXT,
+                    nombre_equipes    INTEGER DEFAULT 0,
+                    joueurs_par_equipe INTEGER DEFAULT 0,
+                    noms_equipes      TEXT    DEFAULT ''
                 )
             """);
+            // Migration: ajouter colonnes si elles n'existent pas
+            try { stmt.executeUpdate("ALTER TABLE session ADD COLUMN nombre_equipes INTEGER DEFAULT 0"); } catch (Exception ignored) {}
+            try { stmt.executeUpdate("ALTER TABLE session ADD COLUMN joueurs_par_equipe INTEGER DEFAULT 0"); } catch (Exception ignored) {}
+            try { stmt.executeUpdate("ALTER TABLE session ADD COLUMN noms_equipes TEXT DEFAULT ''"); } catch (Exception ignored) {}
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS billet (
                     id              INTEGER PRIMARY KEY AUTOINCREMENT,

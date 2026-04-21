@@ -11,9 +11,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import com.laserarena.Repository.*;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public class BilletListController {
@@ -27,8 +29,9 @@ public class BilletListController {
     @FXML private Label                             billetCountLabel;
 
     private Session session;
-    private final BilletRepository       billetRepository = new BilletRepository();
-    private final QRCodeBilletRepository qrCodeRepository = new QRCodeBilletRepository();
+    private final BilletRepository       billetRepository  = new BilletRepository();
+    private final QRCodeBilletRepository qrCodeRepository  = new QRCodeBilletRepository();
+    private final SessionRepository      sessionRepository = new SessionRepository();
 
     public void setSession(Session session) {
         this.session = session;
@@ -99,63 +102,126 @@ public class BilletListController {
 
     @FXML
     public void onGenererBillet() {
-        if (session == null) {
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Sélectionnez une session pour générer un billet.");
-            alert.showAndWait();
+        if (session != null) {
+            // On est dans la page d'une session précise : générer directement, sans dialog
+            genererBilletPourSession(session);
+        } else {
+            // On est dans "tous les billets" : demander quelle session
+            Task<List<Session>> loadTask = new Task<>() {
+                @Override protected List<Session> call() { return sessionRepository.findAll(); }
+            };
+            loadTask.setOnSucceeded(e -> Platform.runLater(() -> {
+                List<Session> sessions = loadTask.getValue();
+                if (sessions.isEmpty()) {
+                    new Alert(Alert.AlertType.WARNING, "Aucune session disponible. Créez d'abord une session.").showAndWait();
+                    return;
+                }
+                afficherDialogChoisirSession(sessions);
+            }));
+            new Thread(loadTask).start();
+        }
+    }
+
+    private void afficherDialogChoisirSession(List<Session> sessions) {
+        Dialog<Session> dialog = new Dialog<>();
+        dialog.setTitle("Générer un billet");
+        dialog.setHeaderText("Choisissez la session pour ce billet");
+
+        ButtonType genererBtn = new ButtonType("Générer", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(genererBtn, ButtonType.CANCEL);
+
+        ComboBox<Session> sessionCombo = new ComboBox<>();
+        sessionCombo.getItems().setAll(sessions);
+        sessionCombo.setCellFactory(lv -> new ListCell<>() {
+            @Override protected void updateItem(Session s, boolean empty) {
+                super.updateItem(s, empty);
+                setText(empty || s == null ? null : s.getNom() + " (" + s.getMaxJoueurs() + " joueurs max)");
+            }
+        });
+        sessionCombo.setButtonCell(new ListCell<>() {
+            @Override protected void updateItem(Session s, boolean empty) {
+                super.updateItem(s, empty);
+                setText(empty || s == null ? null : s.getNom() + " (" + s.getMaxJoueurs() + " joueurs max)");
+            }
+        });
+        sessionCombo.setMaxWidth(Double.MAX_VALUE);
+        sessionCombo.getSelectionModel().selectFirst();
+
+        Label infoLabel = new Label();
+        infoLabel.setStyle("-fx-font-size: 12px;");
+
+        Runnable updateInfo = () -> {
+            Session sel = sessionCombo.getValue();
+            if (sel == null) return;
+            int count    = sessionRepository.countBillets(sel.getId());
+            int restants = sel.getMaxJoueurs() - count;
+            if (restants <= 0) {
+                infoLabel.setText("⚠ Capacité maximale atteinte (" + count + "/" + sel.getMaxJoueurs() + ")");
+                infoLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #c0392b;");
+                dialog.getDialogPane().lookupButton(genererBtn).setDisable(true);
+            } else {
+                infoLabel.setText("✓ " + count + "/" + sel.getMaxJoueurs() + " billets — " + restants + " place(s) disponible(s)");
+                infoLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #085041;");
+                dialog.getDialogPane().lookupButton(genererBtn).setDisable(false);
+            }
+        };
+
+        sessionCombo.valueProperty().addListener((obs, old, nw) -> updateInfo.run());
+        updateInfo.run();
+
+        VBox content = new VBox(10, new Label("Session :"), sessionCombo, infoLabel);
+        content.setStyle("-fx-padding: 10 0;");
+        dialog.getDialogPane().setContent(content);
+        dialog.setResultConverter(bt -> bt == genererBtn ? sessionCombo.getValue() : null);
+        dialog.showAndWait().ifPresent(this::genererBilletPourSession);
+    }
+
+    private void genererBilletPourSession(Session sessionCible) {
+        int count = sessionRepository.countBillets(sessionCible.getId());
+        if (count >= sessionCible.getMaxJoueurs()) {
+            new Alert(Alert.AlertType.WARNING,
+                    "Impossible : la session \"" + sessionCible.getNom() + "\" a atteint sa capacité maximale de "
+                            + sessionCible.getMaxJoueurs() + " billet(s).").showAndWait();
             return;
         }
 
         Billet billet = new Billet(
                 UUID.randomUUID().toString(),
                 StatutBillet.VALIDE,
-                session.getDateExpiration(),
-                session
+                sessionCible.getDateExpiration(),
+                sessionCible
         );
 
         Task<Void> task = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
+            @Override protected Void call() throws Exception {
                 billetRepository.save(billet);
                 qrCodeRepository.genererEtSauvegarder(billet);
                 return null;
             }
         };
-
         task.setOnSucceeded(e -> Platform.runLater(this::chargerBillets));
         task.setOnFailed(e -> Platform.runLater(() -> {
             Throwable ex = task.getException();
             ex.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur : " + ex.getMessage());
-            alert.showAndWait();
+            new Alert(Alert.AlertType.ERROR, "Erreur : " + ex.getMessage()).showAndWait();
         }));
-
         new Thread(task).start();
     }
 
     private void supprimerBillet(Billet billet) {
         Task<Void> task = new Task<>() {
-            @Override
-            protected Void call() {
-                billetRepository.delete(billet.getId());
-                return null;
-            }
+            @Override protected Void call() { billetRepository.delete(billet.getId()); return null; }
         };
         task.setOnSucceeded(e -> Platform.runLater(this::chargerBillets));
-        task.setOnFailed(e -> Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur lors de la suppression.");
-            alert.showAndWait();
-        }));
+        task.setOnFailed(e -> Platform.runLater(() ->
+                new Alert(Alert.AlertType.ERROR, "Erreur lors de la suppression.").showAndWait()));
         new Thread(task).start();
     }
 
     private void afficherQRCode(Billet billet) {
         Task<byte[]> task = new Task<>() {
-            @Override
-            protected byte[] call() {
-                return qrCodeRepository.findImageByBillet(billet);
-            }
+            @Override protected byte[] call() { return qrCodeRepository.findImageByBillet(billet); }
         };
-
         task.setOnSucceeded(e -> Platform.runLater(() -> {
             byte[] imageBytes = task.getValue();
             if (imageBytes == null) return;
@@ -163,33 +229,28 @@ public class BilletListController {
             ImageView imageView = new ImageView(image);
             imageView.setFitWidth(250);
             imageView.setFitHeight(250);
-
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("QR Code — " + billet.getCode());
             alert.setHeaderText(null);
             alert.getDialogPane().setContent(imageView);
             alert.showAndWait();
         }));
-
         new Thread(task).start();
     }
 
     private void chargerBillets() {
         Task<ObservableList<Billet>> task = new Task<>() {
-            @Override
-            protected ObservableList<Billet> call() {
+            @Override protected ObservableList<Billet> call() {
                 if (session != null)
                     return FXCollections.observableArrayList(billetRepository.findBySession(session));
                 else
                     return FXCollections.observableArrayList(billetRepository.findAll());
             }
         };
-
         task.setOnSucceeded(e -> Platform.runLater(() -> {
             billetTable.setItems(task.getValue());
             billetCountLabel.setText(task.getValue().size() + " billet(s)");
         }));
-
         new Thread(task).start();
     }
 

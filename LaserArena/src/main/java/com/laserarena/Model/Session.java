@@ -11,6 +11,10 @@ public class Session {
     private int           maxJoueurs;
     private StatutSession statut;
     private LocalDate     dateExpiration;
+    // Pour EQUIPES et CAPTURE_DRAPEAU
+    private int           nombreEquipes;
+    private int           joueursParEquipe;
+    private String        nomsEquipes; // JSON simple: "Alpha,Beta,Gamma"
 
     public Session() {}
 
@@ -36,4 +40,10 @@ public class Session {
     public void          setStatut(StatutSession s) { this.statut = s; }
     public LocalDate     getDateExpiration() { return dateExpiration; }
     public void          setDateExpiration(LocalDate d) { this.dateExpiration = d; }
+    public int           getNombreEquipes()  { return nombreEquipes; }
+    public void          setNombreEquipes(int n) { this.nombreEquipes = n; }
+    public int           getJoueursParEquipe() { return joueursParEquipe; }
+    public void          setJoueursParEquipe(int n) { this.joueursParEquipe = n; }
+    public String        getNomsEquipes()    { return nomsEquipes; }
+    public void          setNomsEquipes(String n) { this.nomsEquipes = n; }
 }

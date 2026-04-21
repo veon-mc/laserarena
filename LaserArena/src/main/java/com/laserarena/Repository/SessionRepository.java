@@ -14,8 +14,9 @@ public class SessionRepository {
 
     public void save(Session session) {
         String sql = """
-            INSERT INTO session (nom, type_partie, duree_minutes, max_joueurs, statut, date_expiration)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO session (nom, type_partie, duree_minutes, max_joueurs, statut, date_expiration,
+                                 nombre_equipes, joueurs_par_equipe, noms_equipes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
         try (Connection conn = DatabaseConnection.getInstance();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -27,6 +28,9 @@ public class SessionRepository {
             stmt.setString(5, session.getStatut().name());
             stmt.setString(6, session.getDateExpiration() != null
                     ? session.getDateExpiration().toString() : null);
+            stmt.setInt   (7, session.getNombreEquipes());
+            stmt.setInt   (8, session.getJoueursParEquipe());
+            stmt.setString(9, session.getNomsEquipes() != null ? session.getNomsEquipes() : "");
 
             stmt.executeUpdate();
 
@@ -40,7 +44,8 @@ public class SessionRepository {
 
     public void update(Session session) {
         String sql = """
-            UPDATE session SET nom=?, type_partie=?, duree_minutes=?, max_joueurs=?, statut=?, date_expiration=?
+            UPDATE session SET nom=?, type_partie=?, duree_minutes=?, max_joueurs=?, statut=?,
+                               date_expiration=?, nombre_equipes=?, joueurs_par_equipe=?, noms_equipes=?
             WHERE id=?
         """;
         try (Connection conn = DatabaseConnection.getInstance();
@@ -53,7 +58,10 @@ public class SessionRepository {
             stmt.setString(5, session.getStatut().name());
             stmt.setString(6, session.getDateExpiration() != null
                     ? session.getDateExpiration().toString() : null);
-            stmt.setInt   (7, session.getId());
+            stmt.setInt   (7, session.getNombreEquipes());
+            stmt.setInt   (8, session.getJoueursParEquipe());
+            stmt.setString(9, session.getNomsEquipes() != null ? session.getNomsEquipes() : "");
+            stmt.setInt   (10, session.getId());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -96,6 +104,20 @@ public class SessionRepository {
         return sessions;
     }
 
+    public int countBillets(int sessionId) {
+        String sql = "SELECT COUNT(*) FROM billet WHERE session_id=?";
+        try (Connection conn = DatabaseConnection.getInstance();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, sessionId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors du comptage des billets", e);
+        }
+        return 0;
+    }
+
     private Session mapper(ResultSet rs) throws SQLException {
         Session s = new Session();
         s.setId          (rs.getInt   ("id"));
@@ -106,6 +128,9 @@ public class SessionRepository {
         s.setStatut      (StatutSession.valueOf(rs.getString("statut")));
         String date = rs.getString("date_expiration");
         if (date != null) s.setDateExpiration(LocalDate.parse(date));
+        try { s.setNombreEquipes   (rs.getInt   ("nombre_equipes")); }    catch (Exception ignored) {}
+        try { s.setJoueursParEquipe(rs.getInt   ("joueurs_par_equipe")); } catch (Exception ignored) {}
+        try { s.setNomsEquipes     (rs.getString("noms_equipes")); }       catch (Exception ignored) {}
         return s;
     }
 }
