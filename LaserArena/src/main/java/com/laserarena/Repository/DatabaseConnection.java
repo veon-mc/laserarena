@@ -20,6 +20,16 @@ public class DatabaseConnection {
         return instance;
     }
 
+    /** Injecte une connexion externe (SQLite en mémoire) pour les tests. */
+    public static void setInstanceForTest(Connection conn) {
+        instance = conn;
+    }
+
+    /** Réinitialise la connexion après les tests. */
+    public static void resetInstance() {
+        instance = null;
+    }
+
     private static void initialiserTables(Connection conn) throws SQLException {
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("""
@@ -36,7 +46,6 @@ public class DatabaseConnection {
                     noms_equipes      TEXT    DEFAULT ''
                 )
             """);
-            // Migration: ajouter colonnes si elles n'existent pas
             try { stmt.executeUpdate("ALTER TABLE session ADD COLUMN nombre_equipes INTEGER DEFAULT 0"); } catch (Exception ignored) {}
             try { stmt.executeUpdate("ALTER TABLE session ADD COLUMN joueurs_par_equipe INTEGER DEFAULT 0"); } catch (Exception ignored) {}
             try { stmt.executeUpdate("ALTER TABLE session ADD COLUMN noms_equipes TEXT DEFAULT ''"); } catch (Exception ignored) {}
