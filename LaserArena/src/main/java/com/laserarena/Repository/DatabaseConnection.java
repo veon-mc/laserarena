@@ -12,12 +12,16 @@ public class DatabaseConnection {
 
     private DatabaseConnection() {}
 
-    public static Connection getInstance() throws SQLException {
-        if (instance == null || instance.isClosed()) {
-            instance = DriverManager.getConnection(URL);
-            initialiserTables(instance);
+    public static Connection getInstance() {
+        try {
+            if (instance == null || instance.isClosed()) {
+                instance = DriverManager.getConnection(URL);
+                initialiserTables(instance);
+            }
+            return instance;
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la connexion à la base de données", e);
         }
-        return instance;
     }
 
     /** Injecte une connexion externe (SQLite en mémoire) pour les tests. */

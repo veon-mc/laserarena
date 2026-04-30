@@ -17,13 +17,14 @@ public class BilletRepository {
             INSERT INTO billet (code, statut, date_expiration, session_id)
             VALUES (?, ?, ?, ?)
         """;
-        try (Connection conn = DatabaseConnection.getInstance();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
+        Connection conn = DatabaseConnection.getInstance();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, billet.getCode());
             stmt.setString(2, billet.getStatut().name());
             stmt.setString(3, billet.getDateExpiration().toString());
-            stmt.setInt   (4, billet.getSession().getId());
+            stmt.setInt(4, billet.getSession().getId());
 
             stmt.executeUpdate();
 
@@ -37,10 +38,12 @@ public class BilletRepository {
 
     public void update(Billet billet) {
         String sql = "UPDATE billet SET statut=? WHERE id=?";
-        try (Connection conn = DatabaseConnection.getInstance();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        Connection conn = DatabaseConnection.getInstance();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, billet.getStatut().name());
-            stmt.setInt   (2, billet.getId());
+            stmt.setInt(2, billet.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la mise à jour du billet", e);
@@ -49,30 +52,36 @@ public class BilletRepository {
 
     public Optional<Billet> findByCode(String code) {
         String sql = """
-            SELECT b.*, s.id as s_id, s.nom, s.type_partie, s.duree_minutes,
-                   s.max_joueurs, s.statut as s_statut, s.date_expiration as s_date
+            SELECT b.*, s.id as s_id, s.nom
             FROM billet b
             JOIN session s ON b.session_id = s.id
             WHERE b.code = ?
         """;
-        try (Connection conn = DatabaseConnection.getInstance();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        Connection conn = DatabaseConnection.getInstance();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, code);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) return Optional.of(mapperAvecSession(rs));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la recherche du billet", e);
         }
+
         return Optional.empty();
     }
 
     public List<Billet> findBySession(Session session) {
         List<Billet> billets = new ArrayList<>();
         String sql = "SELECT * FROM billet WHERE session_id=? ORDER BY id DESC";
-        try (Connection conn = DatabaseConnection.getInstance();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        Connection conn = DatabaseConnection.getInstance();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, session.getId());
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Billet b = mapper(rs);
@@ -83,53 +92,62 @@ public class BilletRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors du chargement des billets", e);
         }
+
         return billets;
+    }
+
+    public List<Billet> findAll() {
+        List<Billet> billets = new ArrayList<>();
+        String sql = """
+            SELECT b.*, s.id as s_id, s.nom
+            FROM billet b
+            JOIN session s ON b.session_id = s.id
+            ORDER BY b.id DESC
+        """;
+
+        Connection conn = DatabaseConnection.getInstance();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) billets.add(mapperAvecSession(rs));
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors du chargement des billets", e);
+        }
+
+        return billets;
+    }
+
+    public void delete(int id) {
+        String sql = "DELETE FROM billet WHERE id=?";
+
+        Connection conn = DatabaseConnection.getInstance();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la suppression du billet", e);
+        }
     }
 
     private Billet mapper(ResultSet rs) throws SQLException {
         Billet b = new Billet();
-        b.setId            (rs.getInt   ("id"));
-        b.setCode          (rs.getString("code"));
-        b.setStatut        (StatutBillet.valueOf(rs.getString("statut")));
+        b.setId(rs.getInt("id"));
+        b.setCode(rs.getString("code"));
+        b.setStatut(StatutBillet.valueOf(rs.getString("statut")));
         b.setDateExpiration(LocalDate.parse(rs.getString("date_expiration")));
         return b;
     }
 
     private Billet mapperAvecSession(ResultSet rs) throws SQLException {
         Billet b = mapper(rs);
+
         Session s = new Session();
-        s.setId (rs.getInt   ("s_id"));
+        s.setId(rs.getInt("s_id"));
         s.setNom(rs.getString("nom"));
+
         b.setSession(s);
         return b;
-    }
-
-    public List<Billet> findAll() {
-        List<Billet> billets = new ArrayList<>();
-        String sql = """
-        SELECT b.*, s.id as s_id, s.nom, s.type_partie, s.duree_minutes,
-               s.max_joueurs, s.statut as s_statut, s.date_expiration as s_date
-        FROM billet b
-        JOIN session s ON b.session_id = s.id
-        ORDER BY b.id DESC
-    """;
-        try (Connection conn = DatabaseConnection.getInstance();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) billets.add(mapperAvecSession(rs));
-        } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors du chargement des billets", e);
-        }
-        return billets;
-    }
-
-    public void delete(int id) {
-        try (Connection conn = DatabaseConnection.getInstance();
-             PreparedStatement stmt = conn.prepareStatement("DELETE FROM billet WHERE id=?")) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la suppression du billet", e);
-        }
     }
 }
