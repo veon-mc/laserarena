@@ -11,6 +11,17 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Integration tests for {@link QRCodeBilletRepository} using an in-memory SQLite database.
+ * <p>
+ * Covers the full lifecycle of a QR code entity: manual persistence via
+ * {@link QRCodeBilletRepository#save(QRCodeBillet)}, automatic generation and persistence via
+ * {@link QRCodeBilletRepository#generateAndSave(Billet)}, and retrieval via
+ * {@link QRCodeBilletRepository#findByBillet(Billet)} and
+ * {@link QRCodeBilletRepository#findImageByBillet(Billet)}.
+ * All tests follow the AAA (Arrange / Act / Assert) pattern.
+ * </p>
+ */
 @DisplayName("QRCodeBilletRepository")
 class QRCodeBilletRepositoryTest {
 
@@ -21,10 +32,13 @@ class QRCodeBilletRepositoryTest {
     private        Session                sessionTest;
     private        Billet                 billetTest;
 
-    // ------------------------------------------------------------------ //
-    //  Setup: in-memory SQLite database                                    //
-    // ------------------------------------------------------------------ //
-
+    /**
+     * Creates the in-memory SQLite schema once for the entire test class.
+     * The connection is injected into {@link DatabaseConnection} so that
+     * all repository instances use it instead of the production file.
+     *
+     * @throws Exception if the connection or table creation fails
+     */
     @BeforeAll
     static void initDb() throws Exception {
         memoryConn = DriverManager.getConnection("jdbc:sqlite::memory:");
@@ -65,6 +79,12 @@ class QRCodeBilletRepositoryTest {
         DatabaseConnection.setInstanceForTest(memoryConn);
     }
 
+    /**
+     * Clears all rows from the three tables, re-instantiates the repositories,
+     * and inserts a fresh reference session and ticket before each test.
+     *
+     * @throws Exception if the DELETE statements fail
+     */
     @BeforeEach
     void setUp() throws Exception {
         try (Statement stmt = memoryConn.createStatement()) {
@@ -84,25 +104,36 @@ class QRCodeBilletRepositoryTest {
         billetRepo.save(billetTest);
     }
 
+    /**
+     * Resets the {@link DatabaseConnection} singleton and closes the
+     * in-memory connection after all tests have run.
+     *
+     * @throws Exception if the connection cannot be closed
+     */
     @AfterAll
     static void tearDown() throws Exception {
         DatabaseConnection.resetInstance();
         if (memoryConn != null && !memoryConn.isClosed()) memoryConn.close();
     }
 
-    // ------------------------------------------------------------------ //
-    //  save                                                                //
-    // ------------------------------------------------------------------ //
+
+    /**
+     * Tests for the {@link QRCodeBilletRepository#save(QRCodeBillet)} method.
+     */
     @Nested
     @DisplayName("save")
     class SaveTests {
 
+        /**
+         * Verifies that {@link QRCodeBilletRepository#save(QRCodeBillet)} assigns
+         * a positive generated id to the persisted entity.
+         */
         @Test
-        @DisplayName("Should assign a generated id")
+        @DisplayName("Assigne un id généré positif")
         void shouldAssignGeneratedId() {
             // Arrange
-            byte[] img = {1, 2, 3, 4, 5};
-            QRCodeBillet qr = new QRCodeBillet(img, billetTest);
+            byte[]       img = {1, 2, 3, 4, 5};
+            QRCodeBillet qr  = new QRCodeBillet(img, billetTest);
 
             // Act
             qrCodeRepo.save(qr);
@@ -111,12 +142,16 @@ class QRCodeBilletRepositoryTest {
             assertTrue(qr.getId() > 0);
         }
 
+        /**
+         * Verifies that the raw image bytes are persisted correctly and can be
+         * retrieved via {@link QRCodeBilletRepository#findImageByBillet(Billet)}.
+         */
         @Test
-        @DisplayName("Should persist image bytes correctly")
+        @DisplayName("Persiste les image bytes correctement")
         void shouldPersistImageBytes() {
             // Arrange
-            byte[] img = {10, 20, 30, 40, 50};
-            QRCodeBillet qr = new QRCodeBillet(img, billetTest);
+            byte[]       img = {10, 20, 30, 40, 50};
+            QRCodeBillet qr  = new QRCodeBillet(img, billetTest);
 
             // Act
             qrCodeRepo.save(qr);
@@ -127,12 +162,15 @@ class QRCodeBilletRepositoryTest {
             assertArrayEquals(img, result);
         }
 
+        /**
+         * Verifies that the saved entity is linked to the correct ticket.
+         */
         @Test
-        @DisplayName("Should persist association with the correct ticket")
+        @DisplayName("Persiste l'association avec le bon billet")
         void shouldPersistAssociationWithTicket() {
             // Arrange
-            byte[] img = {1, 2, 3};
-            QRCodeBillet qr = new QRCodeBillet(img, billetTest);
+            byte[]       img = {1, 2, 3};
+            QRCodeBillet qr  = new QRCodeBillet(img, billetTest);
 
             // Act
             qrCodeRepo.save(qr);
@@ -143,8 +181,12 @@ class QRCodeBilletRepositoryTest {
             assertEquals(billetTest.getId(), result.get().getBillet().getId());
         }
 
+        /**
+         * Verifies that saving a second QR code for the same ticket throws a
+         * {@link RuntimeException} due to the UNIQUE constraint on {@code billet_id}.
+         */
         @Test
-        @DisplayName("Should throw on duplicate billet_id")
+        @DisplayName("Lève une exception en cas de billet_id dupliqué")
         void shouldThrowOnDuplicateBilletId() {
             // Arrange
             qrCodeRepo.save(new QRCodeBillet(new byte[]{1}, billetTest));
@@ -155,15 +197,20 @@ class QRCodeBilletRepositoryTest {
         }
     }
 
-    // ------------------------------------------------------------------ //
-    //  findImageByBillet                                                    //
-    // ------------------------------------------------------------------ //
+
+    /**
+     * Tests for the {@link QRCodeBilletRepository#findImageByBillet(Billet)} method.
+     */
     @Nested
     @DisplayName("findImageByBillet")
     class FindImageByBilletTests {
 
+        /**
+         * Verifies that the method returns the correct byte array when a QR code
+         * exists for the given ticket.
+         */
         @Test
-        @DisplayName("Should return image bytes for existing QR code")
+        @DisplayName("Retourne les image bytes du QR code existant")
         void shouldReturnImageBytes() {
             // Arrange
             byte[] img = {99, 88, 77};
@@ -177,8 +224,12 @@ class QRCodeBilletRepositoryTest {
             assertArrayEquals(img, result);
         }
 
+        /**
+         * Verifies that the method returns {@code null} when no QR code has been
+         * persisted for the given ticket.
+         */
         @Test
-        @DisplayName("Should return null when no QR code exists for ticket")
+        @DisplayName("Retourne null si aucun QR code n'existe pour ce billet")
         void shouldReturnNullWhenNoQRCode() {
             // Act
             byte[] result = qrCodeRepo.findImageByBillet(billetTest);
@@ -187,8 +238,12 @@ class QRCodeBilletRepositoryTest {
             assertNull(result);
         }
 
+        /**
+         * Verifies that each ticket retrieves only its own QR code image
+         * when multiple tickets exist.
+         */
         @Test
-        @DisplayName("Should return correct image for the right ticket")
+        @DisplayName("Retourne l'image correcte pour le bon billet")
         void shouldReturnCorrectImageForRightTicket() {
             // Arrange
             Billet billet2 = new Billet("qr-test-2", StatutBillet.VALIDE, LocalDate.of(2026, 12, 31), sessionTest);
@@ -209,18 +264,23 @@ class QRCodeBilletRepositoryTest {
         }
     }
 
-    // ------------------------------------------------------------------ //
-    //  findByBillet                                                         //
-    // ------------------------------------------------------------------ //
+
+    /**
+     * Tests for the {@link QRCodeBilletRepository#findByBillet(Billet)} method.
+     */
     @Nested
     @DisplayName("findByBillet")
     class FindByBilletTests {
 
+        /**
+         * Verifies that the method returns the full {@link QRCodeBillet} entity
+         * when a QR code exists for the given ticket.
+         */
         @Test
-        @DisplayName("Should return QRCodeBillet for existing entry")
+        @DisplayName("Retourne le QRCodeBillet existant")
         void shouldReturnQRCodeBillet() {
             // Arrange
-            byte[] img = {5, 6, 7};
+            byte[]       img = {5, 6, 7};
             qrCodeRepo.save(new QRCodeBillet(img, billetTest));
 
             // Act
@@ -232,8 +292,12 @@ class QRCodeBilletRepositoryTest {
             assertEquals(billetTest.getId(), result.get().getBillet().getId());
         }
 
+        /**
+         * Verifies that the method returns an empty {@link Optional} when no QR code
+         * has been persisted for the given ticket.
+         */
         @Test
-        @DisplayName("Should return empty when no QR code exists")
+        @DisplayName("Retourne Optional vide si aucun QR code n'existe")
         void shouldReturnEmptyWhenNoQRCode() {
             // Act
             Optional<QRCodeBillet> result = qrCodeRepo.findByBillet(billetTest);
@@ -242,8 +306,12 @@ class QRCodeBilletRepositoryTest {
             assertTrue(result.isEmpty());
         }
 
+        /**
+         * Verifies that the returned {@link QRCodeBillet} has the same id as the
+         * one assigned during the save operation.
+         */
         @Test
-        @DisplayName("Should set the id on the returned QRCodeBillet")
+        @DisplayName("L'entité retournée a un id cohérent avec celui assigné lors du save")
         void shouldSetIdOnReturnedEntity() {
             // Arrange
             QRCodeBillet qr = new QRCodeBillet(new byte[]{1}, billetTest);
@@ -259,15 +327,21 @@ class QRCodeBilletRepositoryTest {
         }
     }
 
-    // ------------------------------------------------------------------ //
-    //  generateAndSave                                                     //
-    // ------------------------------------------------------------------ //
+
+    /**
+     * Tests for the {@link QRCodeBilletRepository#generateAndSave(Billet)} method,
+     * which internally uses ZXing to produce a PNG image from the ticket code.
+     */
     @Nested
     @DisplayName("generateAndSave")
     class GenerateAndSaveTests {
 
+        /**
+         * Verifies that {@link QRCodeBilletRepository#generateAndSave(Billet)} produces
+         * and persists a non-null, non-empty image for the given ticket.
+         */
         @Test
-        @DisplayName("Should generate and persist a QR code for the ticket")
+        @DisplayName("Génère et persiste un QR code pour le billet")
         void shouldGenerateAndPersist() {
             // Act
             qrCodeRepo.generateAndSave(billetTest);
@@ -278,8 +352,12 @@ class QRCodeBilletRepositoryTest {
             assertTrue(image.length > 0);
         }
 
+        /**
+         * Verifies that the generated image starts with the PNG magic bytes
+         * {@code 0x89 0x50 0x4E 0x47}, confirming the output format.
+         */
         @Test
-        @DisplayName("Generated image should be a valid PNG")
+        @DisplayName("L'image générée est un PNG valide")
         void generatedImageShouldBeValidPng() {
             // Act
             qrCodeRepo.generateAndSave(billetTest);
@@ -294,8 +372,13 @@ class QRCodeBilletRepositoryTest {
             assertEquals((byte) 0x47, image[3]); // G
         }
 
+        /**
+         * Verifies that the generated entity is retrievable via
+         * {@link QRCodeBilletRepository#findByBillet(Billet)} and is correctly
+         * linked to the original ticket.
+         */
         @Test
-        @DisplayName("Should be retrievable via findByBillet after generation")
+        @DisplayName("Le QR code généré est accessible via findByBillet")
         void shouldBeRetrievableViaFindByBillet() {
             // Act
             qrCodeRepo.generateAndSave(billetTest);
@@ -308,8 +391,12 @@ class QRCodeBilletRepositoryTest {
             assertSame(billetTest, result.get().getBillet());
         }
 
+        /**
+         * Verifies that two different tickets produce different QR code images,
+         * since their encoded content (the UUID code) differs.
+         */
         @Test
-        @DisplayName("Different tickets should produce different QR code images")
+        @DisplayName("Deux billets différents produisent des images QR différentes")
         void differentTicketsProduceDifferentImages() {
             // Arrange
             Billet billet2 = new Billet("different-code", StatutBillet.VALIDE, LocalDate.of(2026, 12, 31), sessionTest);

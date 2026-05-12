@@ -7,7 +7,6 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.laserarena.Model.Billet;
 import com.laserarena.Model.QRCodeBillet;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.*;
