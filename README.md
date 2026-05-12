@@ -118,8 +118,10 @@ Les tests fonctionnels élémentaires pour le projet sont les suivants :
 Pour utiliser l'application, suivez les étapes suivantes :
 
 1. Clonez ce repository :
+
 ```
-git clone https://github.com/votre-repo/lasararena.git
+git clone https://git.esi-bru.be/2025-2026/4prj1d/c131/projects/64889-66076-lepomme-khadem
+
 ```
 
 2. Démarrez le projet en exécutant la commande :
