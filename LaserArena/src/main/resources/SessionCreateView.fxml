@@ -89,8 +89,8 @@
     <bottom>
         <HBox alignment="CENTER_RIGHT" spacing="10"
               style="-fx-padding: 16 28; -fx-border-color: #e0e0e0; -fx-border-width: 1 0 0 0; -fx-background-color: white;">
-            <Button text="Annuler"          styleClass="btn-cancel"  onAction="#onAnnuler"/>
-            <Button text="Créer la session" styleClass="btn-primary" onAction="#onCreer"/>
+            <Button text="Annuler"          styleClass="btn-cancel"  onAction="#onCancel"/>
+            <Button text="Créer la session" styleClass="btn-primary" onAction="#onCreate"/>
         </HBox>
     </bottom>
 

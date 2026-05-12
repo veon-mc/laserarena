@@ -27,8 +27,8 @@
                     <TextField fx:id="codeField"
                                promptText="Code billet (UUID)"
                                HBox.hgrow="ALWAYS"
-                               onAction="#onValider"/>
-                    <Button text="Valider" styleClass="btn-primary" onAction="#onValider"/>
+                               onAction="#onValidate"/>
+                    <Button text="Valider" styleClass="btn-primary" onAction="#onValidate"/>
                 </HBox>
                 <Label text="La douchette envoie le code automatiquement dans le champ"
                        style="-fx-font-size: 12px; -fx-text-fill: #aaa; -fx-alignment: CENTER;"

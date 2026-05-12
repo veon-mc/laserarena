@@ -21,6 +21,19 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Controller responsible for displaying and managing the ticket list.
+ * <p>
+ * This controller can display tickets associated with a specific session
+ * or all existing tickets. It provides the following features:
+ * <ul>
+ *     <li>Displaying tickets in a {@link TableView} with their code, status and expiration date.</li>
+ *     <li>Generating a new ticket for a given session.</li>
+ *     <li>Deleting an existing ticket after confirmation.</li>
+ *     <li>Displaying the QR code associated with a ticket in a separate window.</li>
+ * </ul>
+ * </p>
+ */
 public class BilletListController {
 
     @FXML private TableView<Billet>                 billetTable;
@@ -36,17 +49,40 @@ public class BilletListController {
     private final QRCodeBilletRepository qrCodeRepository  = new QRCodeBilletRepository();
     private final SessionRepository      sessionRepository = new SessionRepository();
 
+    /**
+     * Sets the session whose tickets should be displayed.
+     * Updates the session name label and loads the corresponding tickets.
+     *
+     * @param session the selected session
+     */
     public void setSession(Session session) {
         this.session = session;
         sessionNomLabel.setText(session.getNom());
-        chargerBillets();
+        LoadBillets();
     }
 
+    /**
+     * Initializes the controller in "all tickets" mode (no specific session).
+     * Displays all tickets stored in the database.
+     */
     public void init() {
         sessionNomLabel.setText("Tous les billets");
-        chargerBillets();
+        LoadBillets();
     }
 
+    /**
+     * FXML initialization method called automatically after the view is loaded.
+     * <p>
+     * Configures the {@link TableView} columns:
+     * <ul>
+     *     <li>{@code colCode}: displays the unique ticket code.</li>
+     *     <li>{@code colExpiration}: displays the ticket expiration date.</li>
+     *     <li>{@code colStatut}: displays the status as a colored badge
+     *         (green for VALIDE, blue for UTILISE, red for EXPIRE).</li>
+     *     <li>{@code colQr}: displays "Show QR" and "Delete" action buttons.</li>
+     * </ul>
+     * </p>
+     */
     @FXML
     public void initialize() {
         colCode      .setCellValueFactory(new PropertyValueFactory<>("code"));
@@ -80,7 +116,7 @@ public class BilletListController {
 
                 btnQr.setOnAction(e -> {
                     Billet b = getTableView().getItems().get(getIndex());
-                    afficherQRCode(b);
+                    showQRCode(b);
                 });
 
                 btnSuppr.setOnAction(e -> {
@@ -91,7 +127,7 @@ public class BilletListController {
                     confirm.setTitle("Confirmation");
                     confirm.setHeaderText(null);
                     confirm.showAndWait().ifPresent(bt -> {
-                        if (bt == ButtonType.YES) supprimerBillet(b);
+                        if (bt == ButtonType.YES) deleteBillet(b);
                     });
                 });
             }
@@ -103,13 +139,19 @@ public class BilletListController {
         });
     }
 
+    /**
+     * Handles the ticket generation action.
+     * <p>
+     * If a session is set, the ticket is generated directly for that session.
+     * Otherwise, a dialog is displayed allowing the operator to choose the target session
+     * from all available sessions.
+     * </p>
+     */
     @FXML
-    public void onGenererBillet() {
+    public void onGenerateBillet() {
         if (session != null) {
-            // On est dans la page d'une session précise : générer directement, sans dialog
-            genererBilletPourSession(session);
+            generateBilletForSession(session);
         } else {
-            // On est dans "tous les billets" : demander quelle session
             Task<List<Session>> loadTask = new Task<>() {
                 @Override protected List<Session> call() { return sessionRepository.findAll(); }
             };
@@ -119,13 +161,23 @@ public class BilletListController {
                     new Alert(Alert.AlertType.WARNING, "Aucune session disponible. Créez d'abord une session.").showAndWait();
                     return;
                 }
-                afficherDialogChoisirSession(sessions);
+                showDialogChooseSession(sessions);
             }));
             new Thread(loadTask).start();
         }
     }
 
-    private void afficherDialogChoisirSession(List<Session> sessions) {
+    /**
+     * Displays a dialog allowing the operator to select a session for ticket generation.
+     * <p>
+     * The dialog contains a {@link ComboBox} listing the sessions along with a capacity
+     * indicator (number of existing tickets / maximum players). The "Generate" button
+     * is disabled when the maximum capacity has been reached.
+     * </p>
+     *
+     * @param sessions the list of available sessions
+     */
+    private void showDialogChooseSession(List<Session> sessions) {
         Dialog<Session> dialog = new Dialog<>();
         dialog.setTitle("Générer un billet");
         dialog.setHeaderText("Choisissez la session pour ce billet");
@@ -176,10 +228,22 @@ public class BilletListController {
         content.setStyle("-fx-padding: 10 0;");
         dialog.getDialogPane().setContent(content);
         dialog.setResultConverter(bt -> bt == genererBtn ? sessionCombo.getValue() : null);
-        dialog.showAndWait().ifPresent(this::genererBilletPourSession);
+        dialog.showAndWait().ifPresent(this::generateBilletForSession);
     }
 
-    private void genererBilletPourSession(Session sessionCible) {
+    /**
+     * Generates a new ticket for the specified session.
+     * <p>
+     * First checks that the session's maximum capacity has not been reached.
+     * If capacity allows, creates a ticket with a unique UUID code, a
+     * {@link StatutBillet#VALIDE} status and the session's expiration date,
+     * then generates and saves the associated QR code. The operation is
+     * performed asynchronously.
+     * </p>
+     *
+     * @param sessionCible the session for which to generate the ticket
+     */
+    private void generateBilletForSession(Session sessionCible) {
         int count = sessionRepository.countBillets(sessionCible.getId());
         if (count >= sessionCible.getMaxJoueurs()) {
             new Alert(Alert.AlertType.WARNING,
@@ -198,11 +262,11 @@ public class BilletListController {
         Task<Void> task = new Task<>() {
             @Override protected Void call() throws Exception {
                 billetRepository.save(billet);
-                qrCodeRepository.genererEtSauvegarder(billet);
+                qrCodeRepository.generateAndSave(billet);
                 return null;
             }
         };
-        task.setOnSucceeded(e -> Platform.runLater(this::chargerBillets));
+        task.setOnSucceeded(e -> Platform.runLater(this::LoadBillets));
         task.setOnFailed(e -> Platform.runLater(() -> {
             Throwable ex = task.getException();
             ex.printStackTrace();
@@ -211,17 +275,33 @@ public class BilletListController {
         new Thread(task).start();
     }
 
-    private void supprimerBillet(Billet billet) {
+    /**
+     * Deletes a ticket from the database asynchronously.
+     * After deletion, the ticket list is reloaded.
+     * An error alert is displayed if the operation fails.
+     *
+     * @param billet the ticket to delete
+     */
+    private void deleteBillet(Billet billet) {
         Task<Void> task = new Task<>() {
             @Override protected Void call() { billetRepository.delete(billet.getId()); return null; }
         };
-        task.setOnSucceeded(e -> Platform.runLater(this::chargerBillets));
+        task.setOnSucceeded(e -> Platform.runLater(this::LoadBillets));
         task.setOnFailed(e -> Platform.runLater(() ->
                 new Alert(Alert.AlertType.ERROR, "Erreur lors de la suppression.").showAndWait()));
         new Thread(task).start();
     }
 
-    private void afficherQRCode(Billet billet) {
+    /**
+     * Displays the QR code of a ticket in a new non-modal window.
+     * <p>
+     * Retrieves the QR code image from the repository asynchronously,
+     * then displays it in an {@link ImageView} along with the ticket code.
+     * </p>
+     *
+     * @param billet the ticket whose QR code should be displayed
+     */
+    private void showQRCode(Billet billet) {
         Task<byte[]> task = new Task<>() {
             @Override protected byte[] call() { return qrCodeRepository.findImageByBillet(billet); }
         };
@@ -244,12 +324,20 @@ public class BilletListController {
             stage.setTitle("QR Code — " + billet.getCode().substring(0, 8) + "...");
             stage.setScene(new Scene(root));
             stage.setResizable(false);
-            // Pas de initModality → fenêtre non-modale, l'appli reste cliquable
             stage.show();
         }));
         new Thread(task).start();
     }
-    private void chargerBillets() {
+
+    /**
+     * Loads tickets from the database asynchronously and updates the
+     * {@link TableView} along with the ticket count label.
+     * <p>
+     * If a session is set, only tickets for that session are loaded.
+     * Otherwise, all tickets are retrieved.
+     * </p>
+     */
+    private void LoadBillets() {
         Task<ObservableList<Billet>> task = new Task<>() {
             @Override protected ObservableList<Billet> call() {
                 if (session != null)
@@ -265,7 +353,18 @@ public class BilletListController {
         new Thread(task).start();
     }
 
+    /**
+     * Navigates to the session list view.
+     */
     @FXML public void onNavSessions() { NavigationHelper.navigateTo("SessionListView.fxml"); }
+
+    /**
+     * Navigates to the ticket list view showing all tickets.
+     */
     @FXML public void onNavBillets()  { NavigationHelper.navigateToBillets(); }
+
+    /**
+     * Navigates to the ticket scanner view.
+     */
     @FXML public void onNavScanner()  { NavigationHelper.navigateTo("ScannerView.fxml"); }
 }

@@ -5,13 +5,32 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * Singleton managing the SQLite database connection for the application.
+ * <p>
+ * Provides a single shared {@link Connection} instance and automatically
+ * creates the required tables ({@code session}, {@code billet}, {@code qrcode_billet})
+ * on first connection. Also supports injecting a test connection (e.g. in-memory SQLite)
+ * via {@link #setInstanceForTest(Connection)}.
+ * </p>
+ */
 public class DatabaseConnection {
 
     private static final String URL = "jdbc:sqlite:lasararena.db";
     private static Connection   instance;
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
     private DatabaseConnection() {}
 
+    /**
+     * Returns the singleton database connection, creating it if necessary.
+     * On first connection, initializes the database tables.
+     *
+     * @return the shared {@link Connection} instance
+     * @throws RuntimeException if the connection cannot be established
+     */
     public static Connection getInstance() {
         try {
             if (instance == null || instance.isClosed()) {
@@ -24,16 +43,34 @@ public class DatabaseConnection {
         }
     }
 
-    /** Injecte une connexion externe (SQLite en mémoire) pour les tests. */
+    /**
+     * Injects an external connection (e.g. in-memory SQLite) for testing purposes.
+     *
+     * @param conn the test connection to use
+     */
     public static void setInstanceForTest(Connection conn) {
         instance = conn;
     }
 
-    /** Réinitialise la connexion après les tests. */
+    /**
+     * Resets the singleton connection to {@code null}.
+     * Should be called after tests to restore normal behavior.
+     */
     public static void resetInstance() {
         instance = null;
     }
 
+    /**
+     * Creates the required database tables if they do not already exist.
+     * <p>
+     * Also attempts to add team-related columns to the {@code session} table
+     * for backward compatibility with older schemas. These {@code ALTER TABLE}
+     * statements are silently ignored if the columns already exist.
+     * </p>
+     *
+     * @param conn the database connection
+     * @throws SQLException if a table creation statement fails
+     */
     private static void initialiserTables(Connection conn) throws SQLException {
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("""

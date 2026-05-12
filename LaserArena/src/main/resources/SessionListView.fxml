@@ -19,7 +19,7 @@
             <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 10 20; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
                 <Label fx:id="sessionCountLabel" text="0 sessions" style="-fx-text-fill: #888; -fx-font-size: 13px;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="+ Nouvelle session" styleClass="btn-primary" onAction="#onNouvelleSession"/>
+                <Button text="+ Nouvelle session" styleClass="btn-primary" onAction="#onNewSession"/>
             </HBox>
         </VBox>
     </top>

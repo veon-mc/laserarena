@@ -21,7 +21,7 @@
                 <Label fx:id="sessionNomLabel" text="" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
                 <Label fx:id="billetCountLabel" text="0 billets" style="-fx-text-fill: #888; -fx-font-size: 13px; -fx-padding: 0 0 0 12;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="+ Générer un billet" styleClass="btn-primary" onAction="#onGenererBillet"/>
+                <Button text="+ Générer un billet" styleClass="btn-primary" onAction="#onGenerateBillet"/>
             </HBox>
         </VBox>
     </top>

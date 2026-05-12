@@ -10,8 +10,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository providing CRUD operations for {@link Billet} entities in the SQLite database.
+ * <p>
+ * Handles saving, updating, deleting, and querying tickets. Tickets can be retrieved
+ * individually by code, filtered by session, or listed in their entirety.
+ * All methods obtain the database connection through {@link DatabaseConnection#getInstance()}.
+ * </p>
+ */
 public class BilletRepository {
 
+    /**
+     * Saves a new ticket to the database and sets its generated id.
+     *
+     * @param billet the ticket to save
+     * @throws RuntimeException if a database error occurs
+     */
     public void save(Billet billet) {
         String sql = """
             INSERT INTO billet (code, statut, date_expiration, session_id)
@@ -36,6 +50,12 @@ public class BilletRepository {
         }
     }
 
+    /**
+     * Updates the status of an existing ticket in the database.
+     *
+     * @param billet the ticket whose status should be updated
+     * @throws RuntimeException if a database error occurs
+     */
     public void update(Billet billet) {
         String sql = "UPDATE billet SET statut=? WHERE id=?";
 
@@ -50,6 +70,13 @@ public class BilletRepository {
         }
     }
 
+    /**
+     * Finds a ticket by its unique code, including its associated session data.
+     *
+     * @param code the unique ticket code to search for
+     * @return an {@link Optional} containing the ticket if found, or empty otherwise
+     * @throws RuntimeException if a database error occurs
+     */
     public Optional<Billet> findByCode(String code) {
         String sql = """
             SELECT b.*, s.id as s_id, s.nom
@@ -64,7 +91,7 @@ public class BilletRepository {
             stmt.setString(1, code);
 
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) return Optional.of(mapperAvecSession(rs));
+                if (rs.next()) return Optional.of(mapperWithSession(rs));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la recherche du billet", e);
@@ -73,6 +100,13 @@ public class BilletRepository {
         return Optional.empty();
     }
 
+    /**
+     * Retrieves all tickets belonging to a given session, ordered by id descending.
+     *
+     * @param session the session whose tickets should be retrieved
+     * @return the list of tickets for the specified session
+     * @throws RuntimeException if a database error occurs
+     */
     public List<Billet> findBySession(Session session) {
         List<Billet> billets = new ArrayList<>();
         String sql = "SELECT * FROM billet WHERE session_id=? ORDER BY id DESC";
@@ -96,6 +130,13 @@ public class BilletRepository {
         return billets;
     }
 
+    /**
+     * Retrieves all tickets from the database with their associated session data,
+     * ordered by id descending.
+     *
+     * @return the list of all tickets
+     * @throws RuntimeException if a database error occurs
+     */
     public List<Billet> findAll() {
         List<Billet> billets = new ArrayList<>();
         String sql = """
@@ -110,7 +151,7 @@ public class BilletRepository {
         try (PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
-            while (rs.next()) billets.add(mapperAvecSession(rs));
+            while (rs.next()) billets.add(mapperWithSession(rs));
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors du chargement des billets", e);
         }
@@ -118,6 +159,12 @@ public class BilletRepository {
         return billets;
     }
 
+    /**
+     * Deletes a ticket from the database by its id.
+     *
+     * @param id the id of the ticket to delete
+     * @throws RuntimeException if a database error occurs
+     */
     public void delete(int id) {
         String sql = "DELETE FROM billet WHERE id=?";
 
@@ -131,6 +178,13 @@ public class BilletRepository {
         }
     }
 
+    /**
+     * Maps a {@link ResultSet} row to a {@link Billet} object without session data.
+     *
+     * @param rs the result set positioned on the current row
+     * @return the mapped ticket
+     * @throws SQLException if a column cannot be read
+     */
     private Billet mapper(ResultSet rs) throws SQLException {
         Billet b = new Billet();
         b.setId(rs.getInt("id"));
@@ -140,7 +194,15 @@ public class BilletRepository {
         return b;
     }
 
-    private Billet mapperAvecSession(ResultSet rs) throws SQLException {
+    /**
+     * Maps a {@link ResultSet} row to a {@link Billet} object including
+     * its associated {@link Session} (id and name only).
+     *
+     * @param rs the result set positioned on the current row
+     * @return the mapped ticket with session data
+     * @throws SQLException if a column cannot be read
+     */
+    private Billet mapperWithSession(ResultSet rs) throws SQLException {
         Billet b = mapper(rs);
 
         Session s = new Session();

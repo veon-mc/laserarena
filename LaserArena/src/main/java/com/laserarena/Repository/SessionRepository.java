@@ -10,8 +10,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository providing CRUD operations for {@link Session} entities in the SQLite database.
+ * <p>
+ * Handles saving, updating, deleting, and querying sessions. Also provides a method
+ * to count the number of tickets associated with a given session.
+ * All methods obtain the database connection through {@link DatabaseConnection#getInstance()}.
+ * </p>
+ */
 public class SessionRepository {
 
+    /**
+     * Saves a new session to the database and sets its generated id.
+     *
+     * @param session the session to save
+     * @throws RuntimeException if a database error occurs
+     */
     public void save(Session session) {
         String sql = """
             INSERT INTO session (nom, type_partie, duree_minutes, max_joueurs, statut, date_expiration,
@@ -44,6 +58,12 @@ public class SessionRepository {
         }
     }
 
+    /**
+     * Updates all fields of an existing session in the database.
+     *
+     * @param session the session with updated values
+     * @throws RuntimeException if a database error occurs
+     */
     public void update(Session session) {
         String sql = """
             UPDATE session SET nom=?, type_partie=?, duree_minutes=?, max_joueurs=?, statut=?,
@@ -71,6 +91,12 @@ public class SessionRepository {
         }
     }
 
+    /**
+     * Deletes a session from the database by its id.
+     *
+     * @param id the id of the session to delete
+     * @throws RuntimeException if a database error occurs
+     */
     public void delete(int id) {
         String sql = "DELETE FROM session WHERE id=?";
 
@@ -84,6 +110,13 @@ public class SessionRepository {
         }
     }
 
+    /**
+     * Finds a session by its id.
+     *
+     * @param id the session id to search for
+     * @return an {@link Optional} containing the session if found, or empty otherwise
+     * @throws RuntimeException if a database error occurs
+     */
     public Optional<Session> findById(int id) {
         String sql = "SELECT * FROM session WHERE id=?";
 
@@ -104,6 +137,12 @@ public class SessionRepository {
         return Optional.empty();
     }
 
+    /**
+     * Retrieves all sessions from the database, ordered by id descending.
+     *
+     * @return the list of all sessions
+     * @throws RuntimeException if a database error occurs
+     */
     public List<Session> findAll() {
         List<Session> sessions = new ArrayList<>();
         String sql = "SELECT * FROM session ORDER BY id DESC";
@@ -123,6 +162,13 @@ public class SessionRepository {
         return sessions;
     }
 
+    /**
+     * Counts the number of tickets associated with a given session.
+     *
+     * @param sessionId the id of the session
+     * @return the number of tickets for the specified session
+     * @throws RuntimeException if a database error occurs
+     */
     public int countBillets(int sessionId) {
         String sql = "SELECT COUNT(*) FROM billet WHERE session_id=?";
 
@@ -143,6 +189,18 @@ public class SessionRepository {
         return 0;
     }
 
+    /**
+     * Maps a {@link ResultSet} row to a {@link Session} object.
+     * <p>
+     * Team-related columns ({@code nombre_equipes}, {@code joueurs_par_equipe},
+     * {@code noms_equipes}) are read defensively to support older database schemas
+     * where these columns may not exist.
+     * </p>
+     *
+     * @param rs the result set positioned on the current row
+     * @return the mapped session
+     * @throws SQLException if a required column cannot be read
+     */
     private Session mapper(ResultSet rs) throws SQLException {
         Session s = new Session();
 

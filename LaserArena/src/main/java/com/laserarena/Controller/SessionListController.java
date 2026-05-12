@@ -12,6 +12,19 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.application.Platform;
 import javafx.scene.layout.HBox;
 
+/**
+ * Controller responsible for displaying and managing the list of lasergame sessions.
+ * <p>
+ * Displays all sessions in a {@link TableView} with their name, game type, duration,
+ * maximum player count and status. Provides the following features:
+ * <ul>
+ *     <li>Viewing the tickets associated with a specific session.</li>
+ *     <li>Deleting a session (along with all its tickets) after confirmation.</li>
+ *     <li>Navigating to the session creation view.</li>
+ * </ul>
+ * All database operations are performed asynchronously.
+ * </p>
+ */
 public class SessionListController {
 
     @FXML private TableView<Session>                  sessionTable;
@@ -25,6 +38,22 @@ public class SessionListController {
 
     private final SessionRepository sessionRepository = new SessionRepository();
 
+    /**
+     * FXML initialization method called automatically after the view is loaded.
+     * <p>
+     * Configures the {@link TableView} columns:
+     * <ul>
+     *     <li>{@code colNom}: displays the session name.</li>
+     *     <li>{@code colType}: displays the game type.</li>
+     *     <li>{@code colDuree}: displays the duration in minutes.</li>
+     *     <li>{@code colMaxJoueurs}: displays the maximum number of players.</li>
+     *     <li>{@code colStatut}: displays the status as a colored badge
+     *         (green for OUVERTE, grey for TERMINEE).</li>
+     *     <li>{@code colActions}: displays "View tickets" and "Delete" action buttons.</li>
+     * </ul>
+     * Triggers an initial load of all sessions from the database.
+     * </p>
+     */
     @FXML
     public void initialize() {
         colNom       .setCellValueFactory(new PropertyValueFactory<>("nom"));
@@ -70,7 +99,7 @@ public class SessionListController {
                     confirm.setTitle("Confirmation");
                     confirm.setHeaderText(null);
                     confirm.showAndWait().ifPresent(bt -> {
-                        if (bt == ButtonType.YES) supprimerSession(s);
+                        if (bt == ButtonType.YES) deleteSession(s);
                     });
                 });
             }
@@ -81,10 +110,16 @@ public class SessionListController {
             }
         });
 
-        chargerSessions();
+        loadSessions();
     }
 
-    private void supprimerSession(Session session) {
+    /**
+     * Deletes a session and all its associated tickets from the database asynchronously.
+     * Reloads the session list on success. Displays an error alert if the operation fails.
+     *
+     * @param session the session to delete
+     */
+    private void deleteSession(Session session) {
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() {
@@ -92,7 +127,7 @@ public class SessionListController {
                 return null;
             }
         };
-        task.setOnSucceeded(e -> Platform.runLater(this::chargerSessions));
+        task.setOnSucceeded(e -> Platform.runLater(this::loadSessions));
         task.setOnFailed(e -> Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur lors de la suppression.");
             alert.showAndWait();
@@ -100,7 +135,12 @@ public class SessionListController {
         new Thread(task).start();
     }
 
-    private void chargerSessions() {
+    /**
+     * Loads all sessions from the database asynchronously and updates
+     * the {@link TableView} along with the session count label.
+     * Displays an error message in the count label if loading fails.
+     */
+    private void loadSessions() {
         Task<ObservableList<Session>> task = new Task<>() {
             @Override
             protected ObservableList<Session> call() {
@@ -120,8 +160,23 @@ public class SessionListController {
         new Thread(task).start();
     }
 
-    @FXML public void onNouvelleSession() { NavigationHelper.navigateTo("SessionCreateView.fxml"); }
-    @FXML public void onNavSessions()     { /* déjà sur cette vue */ }
+    /**
+     * Navigates to the session creation view.
+     */
+    @FXML public void onNewSession() { NavigationHelper.navigateTo("SessionCreateView.fxml"); }
+
+    /**
+     * Navigation action for the session list view (no-op since this is the current view).
+     */
+    @FXML public void onNavSessions()     { /* already on this view */ }
+
+    /**
+     * Navigates to the ticket list view showing all tickets.
+     */
     @FXML public void onNavBillets()      { NavigationHelper.navigateToBillets(); }
+
+    /**
+     * Navigates to the ticket scanner view.
+     */
     @FXML public void onNavScanner()      { NavigationHelper.navigateTo("ScannerView.fxml"); }
 }
