@@ -24,6 +24,16 @@ public class App extends Application {
         primaryStage.show();
     }
 
+    @Override
+    public void stop() {
+        try {
+            java.sql.Connection conn = com.laserarena.Repository.DatabaseConnection.getInstance();
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
+        } catch (Exception ignored) {}
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
