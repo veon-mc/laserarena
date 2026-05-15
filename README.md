@@ -27,23 +27,28 @@ classDiagram
     +int dureeMinutes
     +int maxJoueurs
     +StatutSession statut
+    +LocalDate dateExpiration
+    +int nombreEquipes
+    +int joueursParEquipe
+    +String nomsEquipes
   }
   class Billet {
     +int id
     +String code
     +StatutBillet statut
     +LocalDate dateExpiration
-    +int sessionId
+    +Session session
   }
   class QRCodeBillet {
     +int id
     +byte[] imageBytes
-    +int billetId
+    +Billet billet
   }
   class StatutSession {
     <<enumeration>>
     OUVERTE
     TERMINEE
+    EN_COURS
   }
   class StatutBillet {
     <<enumeration>>
