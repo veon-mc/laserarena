@@ -139,7 +139,6 @@ suivants :
 
 - La douchette D5100Y envoie parfois le caractère `§` à la place du tiret `-` dans les UUID. Un remplacement automatique a été ajouté dans le `ScannerController`, mais d'autres caractères spéciaux pourraient poser problème selon la configuration clavier de la machine.
 - L'application ne gère pas la vérification automatique de l'expiration des billets : un billet dont la date d'expiration est dépassée reste au statut `VALIDE` en base tant qu'il n'est pas scanné. Une tâche planifiée (ScheduledExecutorService) pourrait résoudre ce problème.
-- La connexion à la base de données est partagée (singleton) et n'est pas fermée proprement à la fermeture de l'application.
 
 ## Retrospective
 
