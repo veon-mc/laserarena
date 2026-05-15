@@ -1,12 +1,20 @@
 package com.laserarena.Repository;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 /**
  * Singleton managing the SQLite database connection for the application.
+ * <p>
+ * The database URL is loaded from the {@code config.properties} file located
+ * in the classpath. This avoids hardcoding configuration values and makes it
+ * easy to switch databases (e.g. for testing or deployment).
+ * </p>
  * <p>
  * Provides a single shared {@link Connection} instance and automatically
  * creates the required tables ({@code session}, {@code billet}, {@code qrcode_billet})
@@ -16,8 +24,20 @@ import java.sql.Statement;
  */
 public class DatabaseConnection {
 
-    private static final String URL = "jdbc:sqlite:lasararena.db";
+    private static final String URL;
     private static Connection   instance;
+
+    static {
+        Properties props = new Properties();
+        try (InputStream in = DatabaseConnection.class.getResourceAsStream("/config.properties")) {
+            if (in != null) {
+                props.load(in);
+            }
+        } catch (IOException e) {
+            System.err.println("Unable to load config.properties: " + e.getMessage());
+        }
+        URL = props.getProperty("db.url", "jdbc:sqlite:lasararena.db");
+    }
 
     /**
      * Private constructor to prevent instantiation.

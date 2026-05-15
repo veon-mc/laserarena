@@ -160,19 +160,30 @@ public class BilletRepository {
     }
 
     /**
-     * Deletes a ticket from the database by its id.
+     * Deletes a ticket and its associated QR code from the database by its id.
+     * <p>
+     * The QR code is deleted first to respect the foreign key constraint,
+     * then the ticket itself is removed.
+     * </p>
      *
      * @param id the id of the ticket to delete
      * @throws RuntimeException if a database error occurs
      */
     public void delete(int id) {
-        String sql = "DELETE FROM billet WHERE id=?";
+        String deleteQr     = "DELETE FROM qrcode_billet WHERE billet_id=?";
+        String deleteBillet = "DELETE FROM billet WHERE id=?";
 
         Connection conn = DatabaseConnection.getInstance();
 
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
+        try {
+            try (PreparedStatement stmt = conn.prepareStatement(deleteQr)) {
+                stmt.setInt(1, id);
+                stmt.executeUpdate();
+            }
+            try (PreparedStatement stmt = conn.prepareStatement(deleteBillet)) {
+                stmt.setInt(1, id);
+                stmt.executeUpdate();
+            }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la suppression du billet", e);
         }

@@ -92,19 +92,36 @@ public class SessionRepository {
     }
 
     /**
-     * Deletes a session from the database by its id.
+     * Deletes a session and all its associated data (QR codes and tickets)
+     * from the database by its id.
+     * <p>
+     * The deletion is performed in the correct order to respect foreign key
+     * constraints: QR codes first, then tickets, then the session itself.
+     * </p>
      *
      * @param id the id of the session to delete
      * @throws RuntimeException if a database error occurs
      */
     public void delete(int id) {
-        String sql = "DELETE FROM session WHERE id=?";
+        String deleteQrCodes = "DELETE FROM qrcode_billet WHERE billet_id IN (SELECT id FROM billet WHERE session_id=?)";
+        String deleteBillets = "DELETE FROM billet WHERE session_id=?";
+        String deleteSession = "DELETE FROM session WHERE id=?";
 
         Connection conn = DatabaseConnection.getInstance();
 
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
+        try {
+            try (PreparedStatement stmt = conn.prepareStatement(deleteQrCodes)) {
+                stmt.setInt(1, id);
+                stmt.executeUpdate();
+            }
+            try (PreparedStatement stmt = conn.prepareStatement(deleteBillets)) {
+                stmt.setInt(1, id);
+                stmt.executeUpdate();
+            }
+            try (PreparedStatement stmt = conn.prepareStatement(deleteSession)) {
+                stmt.setInt(1, id);
+                stmt.executeUpdate();
+            }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la suppression de la session", e);
         }
