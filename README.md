@@ -118,13 +118,16 @@ Les tests fonctionnels élémentaires pour le projet sont les suivants :
 Pour utiliser l'application, suivez les étapes suivantes :
 
 1. Clonez ce repository :
-
 ```
 git clone https://git.esi-bru.be/2025-2026/4prj1d/c131/projects/64889-66076-lepomme-khadem
-
 ```
 
-2. Démarrez le projet en exécutant la commande :
+2. Déplacez vous dans le dossier LaserArena :
+```
+cd LaserArena/
+```
+
+3. Démarrez le projet en exécutant la commande :
 ```
 mvn javafx:run
 ```
@@ -134,11 +137,16 @@ mvn javafx:run
 Lors de la réalisation des tests fonctionnels, nous avons constaté les problèmes
 suivants :
 
-- /
+- La douchette D5100Y envoie parfois le caractère `§` à la place du tiret `-` dans les UUID. Un remplacement automatique a été ajouté dans le `ScannerController`, mais d'autres caractères spéciaux pourraient poser problème selon la configuration clavier de la machine.
+- L'application ne gère pas la vérification automatique de l'expiration des billets : un billet dont la date d'expiration est dépassée reste au statut `VALIDE` en base tant qu'il n'est pas scanné. Une tâche planifiée (ScheduledExecutorService) pourrait résoudre ce problème.
+- La connexion à la base de données est partagée (singleton) et n'est pas fermée proprement à la fermeture de l'application.
 
 ## Retrospective
 
 Nous avons constaté les différences suivantes entre le diagramme de classes imaginé
 au départ et l'implémentation réalisée :
 
-- /
+- Le modèle `Session` a été enrichi par rapport à l'analyse initiale avec les champs `nombreEquipes`, `joueursParEquipe` et `nomsEquipes` pour supporter les modes de jeu par équipes (EQUIPES et CAPTURE_DRAPEAU), qui n'avaient pas été prévus dans le diagramme original.
+- Le diagramme initial ne prévoyait pas de `NavigationHelper` : cette classe utilitaire a été ajoutée pour centraliser la navigation entre les vues FXML et éviter la duplication de code dans les controllers.
+- L'URL de la base de données, initialement codée en dur, a été externalisée dans un fichier `config.properties` pour respecter les bonnes pratiques.
+- La suppression en cascade (session → billets → QR codes) n'était pas prévue dans l'analyse initiale mais s'est avérée nécessaire pour éviter les données orphelines en base.
