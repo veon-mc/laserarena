@@ -1,156 +1,108 @@
-# LaserArena – Gestion de sessions de lasergame avec QR Code
+# LaserArena
 
-## Auteurs
+A desktop app to manage laser tag sessions with QR code ticketing. Operators create game sessions, generate a unique QR code ticket for each player, and control access to the arena by scanning tickets with a barcode scanner. Each scan instantly tells whether a ticket is valid, already used or expired.
 
-- Groupe C131
-- g64889 Lepomme Michael
-- g66076 Ali Kadhem
+## Features
 
-## Description du Projet
+- **Session management**: create sessions with a game mode (elimination, team match, capture the flag), duration, player limit and team setup
+- **Ticket generation**: one unique ticket per player, with its own QR code
+- **Access control**: scan tickets with a handheld barcode scanner and get an instant valid / used / expired result
+- **Cascade deletion**: deleting a session cleans up its tickets and QR codes
 
-Ce projet est une application permettant de gérer des sessions de lasergame. Un
-opérateur peut créer des sessions de jeu, générer des billets uniques associés à
-un QR code pour chaque joueur, et contrôler l'accès à l'arène en scannant les
-billets à l'aide d'une douchette. L'application vérifie instantanément si un billet
-est valide, déjà utilisé ou expiré.
+## Tech Stack
 
-## Diagramme de Classe
+- Java with JavaFX and FXML for the UI
+- Maven for build and dependencies
+- JUnit for unit tests
+- Relational database accessed through a repository layer
 
-Le diagramme de classe ci-dessous illustre la structure du modèle de l'application.
+The app follows the **MVC** pattern. A `NavigationHelper` centralizes navigation between FXML views to keep controllers lean.
+
+## Getting Started
+
+### Prerequisites
+
+- JDK and Maven
+- Optional: a USB barcode scanner (it acts as a keyboard, so tickets can also be typed manually)
+
+### Run the app
+
+```bash
+git clone https://github.com/veon-mc/laser-arena.git
+cd laser-arena/LaserArena
+mvn javafx:run
+```
+
+The database URL is set in `config.properties`.
+
+### Run the tests
+
+```bash
+mvn test
+```
+
+## Data Model
 
 ```mermaid
 classDiagram
   class Session {
     +int id
-    +String nom
-    +TypePartie typePartie
-    +int dureeMinutes
-    +int maxJoueurs
-    +StatutSession statut
-    +LocalDate dateExpiration
-    +int nombreEquipes
-    +int joueursParEquipe
-    +String nomsEquipes
+    +String name
+    +GameType gameType
+    +int durationMinutes
+    +int maxPlayers
+    +SessionStatus status
+    +LocalDate expirationDate
+    +int teamCount
+    +int playersPerTeam
+    +String teamNames
   }
-  class Billet {
+  class Ticket {
     +int id
     +String code
-    +StatutBillet statut
-    +LocalDate dateExpiration
+    +TicketStatus status
+    +LocalDate expirationDate
     +Session session
   }
-  class QRCodeBillet {
+  class TicketQRCode {
     +int id
     +byte[] imageBytes
-    +Billet billet
+    +Ticket ticket
   }
-  class StatutSession {
+  class SessionStatus {
     <<enumeration>>
-    OUVERTE
-    TERMINEE
-    EN_COURS
+    OPEN
+    IN_PROGRESS
+    FINISHED
   }
-  class StatutBillet {
+  class TicketStatus {
     <<enumeration>>
-    VALIDE
-    UTILISE
-    EXPIRE
+    VALID
+    USED
+    EXPIRED
   }
-  class TypePartie {
+  class GameType {
     <<enumeration>>
-    CAPTURE_DRAPEAU
+    CAPTURE_THE_FLAG
     ELIMINATION
-    EQUIPES
+    TEAMS
   }
-  Session "1" --> "*" Billet : génère
-  Billet "1" --> "1" QRCodeBillet : possède
-  Session --> StatutSession
-  Session --> TypePartie
-  Billet --> StatutBillet
+  Session "1" --> "*" Ticket : generates
+  Ticket "1" --> "1" TicketQRCode : has
+  Session --> SessionStatus
+  Session --> GameType
+  Ticket --> TicketStatus
 ```
 
-## Choix de l'Architecture
+> Class and field names are translated here for readability; in the source code they are in French (`Billet`, `StatutBillet`, etc.).
 
-L'architecture retenue pour ce projet est Model-View-Controller (MVC), avec JavaFX
-et FXML pour les vues.
+## Known Issues
 
-## Plan de Tests Fonctionnels
+- With some keyboard layouts, the D5100Y scanner sends `§` instead of `-` in ticket UUIDs. The `ScannerController` replaces it automatically, but other special characters may still be affected depending on the machine's keyboard configuration.
 
-Les tests fonctionnels élémentaires pour le projet sont les suivants :
+## Authors
 
-- Créer une session de jeu et vérifier qu'elle apparaît dans la liste des sessions.
-- Générer un billet pour une session et vérifier que son statut est VALIDE.
-- Générer le QR code associé à un billet et vérifier que l'image est bien créée.
-- Scanner un billet VALIDE : vérifier que son statut passe à UTILISE.
-- Scanner un billet déjà UTILISE : vérifier que l'application affiche un message d'erreur.
-- Scanner un billet EXPIRE : vérifier que l'application affiche un message d'erreur.
-- Scanner un code inexistant : vérifier que l'application affiche un message d'erreur.
+- Michael Lepomme
+- Ali Kadhem
 
-## Calendrier Hebdomadaire des Tâches
-
-### Semaine 1 – 6H
-| Qui | Description |
-|--------|--------------------------------------|
-| Tous | Analyse du projet, validation README |
-| Michael | Initialisation du dépôt Git et structure du projet Maven |
-| Ali | Création des vues FXML principales |
-
-### Semaine 2 – 6H
-| Qui | Description |
-|--------|--------------------------------------|
-| Michael | Implémentation du modèle (Session, Billet, QRCodeBillet) |
-| Ali | Implémentation de la base de données et des Repository |
-
-### Semaine 3 – 6H
-| Qui | Description |
-|--------|--------------------------------------|
-| Michael | Génération des QR codes et intégration dans l'UI |
-| Ali | Lecture douchette et logique de validation des billets |
-
-### Semaine 4 – 6H
-| Qui | Description |
-|--------|--------------------------------------|
-| Michael | Tests unitaires du modèle |
-| Ali | Tests unitaires des Repository |
-
-### Semaine 5 – 6H
-| Qui | Description |
-|--------|--------------------------------------|
-| Tous | Corrections, finalisation, vidéo de démonstration |
-
-## Installation et utilisation
-
-Pour utiliser l'application, suivez les étapes suivantes :
-
-1. Clonez ce repository :
-```
-git clone https://git.esi-bru.be/2025-2026/4prj1d/c131/projects/64889-66076-lepomme-khadem
-```
-
-2. Déplacez vous dans le dossier LaserArena :
-```
-cd LaserArena/
-```
-
-3. Démarrez le projet en exécutant la commande :
-```
-mvn javafx:run
-```
-
-## Problèmes connus de l'application
-
-Lors de la réalisation des tests fonctionnels, nous avons constaté les problèmes
-suivants :
-
-- La douchette D5100Y envoie parfois le caractère `§` à la place du tiret `-` dans les UUID. Un remplacement automatique a été ajouté dans le `ScannerController`, mais d'autres caractères spéciaux pourraient poser problème selon la configuration clavier de la machine.
-
-
-## Retrospective
-
-Nous avons constaté les différences suivantes entre le diagramme de classes imaginé
-au départ et l'implémentation réalisée :
-
-- Le modèle `Session` a été enrichi par rapport à l'analyse initiale avec les champs `nombreEquipes`, `joueursParEquipe` et `nomsEquipes` pour supporter les modes de jeu par équipes (EQUIPES et CAPTURE_DRAPEAU), qui n'avaient pas été prévus dans le diagramme original.
-- Le diagramme initial ne prévoyait pas de `NavigationHelper` : cette classe utilitaire a été ajoutée pour centraliser la navigation entre les vues FXML et éviter la duplication de code dans les controllers.
-- L'URL de la base de données, initialement codée en dur, a été externalisée dans un fichier `config.properties` pour respecter les bonnes pratiques.
-- La suppression en cascade (session → billets → QR codes) n'était pas prévue dans l'analyse initiale mais s'est avérée nécessaire pour éviter les données orphelines en base.
+Built as a team project at HE2B ESI (2025–2026).
